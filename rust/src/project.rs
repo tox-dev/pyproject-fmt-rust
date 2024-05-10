@@ -713,7 +713,7 @@ mod tests {
     ]
     dependencies = [
       "appdirs",
-      "packaging>=20.0; python_version > \"3.4\"",
+      "packaging>=20.0; python_version>'3.4'",
     ]
     "#},
         true,

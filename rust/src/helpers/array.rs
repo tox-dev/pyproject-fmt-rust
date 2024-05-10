@@ -186,7 +186,7 @@ mod tests {
     a=['importlib-metadata>=7.0.0;python_version<"3.8"']
     "#},
         indoc ! {r#"
-    a = ["importlib-metadata>=7; python_version < \"3.8\""]
+    a = ["importlib-metadata>=7; python_version<'3.8'"]
     "#},
         false
     )]

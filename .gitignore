@@ -7,6 +7,6 @@ dist
 
 /target
 /pyproject-*.toml
-/src/pyproject_fmt/_lib.abi3*
+/src/pyproject_fmt_rust/_lib.abi3*
 /tarpaulin-report.html
 /build_rs_cov.profraw

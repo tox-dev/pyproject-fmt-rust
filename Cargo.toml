@@ -1,5 +1,5 @@
 [package]
-name = "pyproject-fmt"
+name = "pyproject-fmt-rust"
 version = "2.0.0"
 description = "Format pyproject.toml files"
 repository = "https://github.com/tox-dev/pyproject-fmt"
@@ -15,6 +15,7 @@ crate-type = ["cdylib"]
 [dependencies]
 taplo = { version = "0.13.0" }                          # formatter
 pyo3 = { version = "0.21.2", features = ["abi3-py38"] } # integration with Python
+pep508_rs = { version = "0.5.0" }
 lexical-sort = { version = "0.3.1" }
 regex = { version = "1.10.4" }
 
