@@ -3,10 +3,8 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
-    tags-ignore: [ "**" ]
+    tags: [ "*" ]
   pull_request:
-  schedule:
-    - cron: "0 8 * * *"
 concurrency:
   group: check-${{ github.ref }}
   cancel-in-progress: true
