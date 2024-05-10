@@ -30,11 +30,6 @@ repos:
       - id: ruff-format
       - id: ruff
         args: [ "--fix", "--unsafe-fixes", "--exit-non-zero-on-fix" ]
-  - repo: https://github.com/doublify/pre-commit-rust
-    rev: v1.0
-    hooks:
-      - id: fmt
-      - id: clippy
   - repo: meta
     hooks:
       - id: check-hooks-apply
