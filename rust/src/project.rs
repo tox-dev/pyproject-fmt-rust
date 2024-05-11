@@ -212,7 +212,7 @@ fn generate_classifiers_to_entry(
                     let mut count = 0;
                     let delete = existing
                         .iter()
-                        .filter(|e| e.starts_with("Programming Language :: Python :: ") && !must_have.contains(*e))
+                        .filter(|e| e.starts_with("Programming Language :: Python :: 3") && !must_have.contains(*e))
                         .collect::<HashSet<&String>>();
                     let mut to_insert = Vec::<SyntaxElement>::new();
                     let mut delete_mode = false;
@@ -827,6 +827,34 @@ mod tests {
     "#},
         true,
         (3, 8),
+    )]
+    #[case::project_preserve_implementation_classifiers(
+        indoc ! {r#"
+    [project]
+    requires-python = ">=3.8"
+    classifiers = [
+      "License :: OSI Approved :: MIT License",
+      "Topic :: Software Development :: Libraries :: Python Modules",
+      "Programming Language :: Python :: Implementation :: CPython",
+      "Programming Language :: Python :: Implementation :: PyPy",
+    ]
+    "#},
+        indoc ! {r#"
+    [project]
+    requires-python = ">=3.8"
+    classifiers = [
+      "License :: OSI Approved :: MIT License",
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
+      "Programming Language :: Python :: 3.10",
+      "Programming Language :: Python :: Implementation :: CPython",
+      "Programming Language :: Python :: Implementation :: PyPy",
+      "Topic :: Software Development :: Libraries :: Python Modules",
+    ]
+    "#},
+        true,
+        (3, 10),
     )]
     fn test_format_project(
         #[case] start: &str,
