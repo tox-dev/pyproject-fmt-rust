@@ -1,9 +1,22 @@
-def format_toml(  # noqa: PLR0913
-    content: str,
-    *,
-    column_width: int,
-    indent: int,
-    keep_full_version: bool,
-    max_supported_python: tuple[int, int],
-    min_supported_python: tuple[int, int],
-) -> str: ...
+class Settings:
+    def __init__(  # noqa: PLR0913
+        self,
+        *,
+        column_width: int,
+        indent: int,
+        keep_full_version: bool,
+        max_supported_python: tuple[int, int],
+        min_supported_python: tuple[int, int],
+    ) -> None: ...
+    @property
+    def column_width(self) -> int: ...
+    @property
+    def indent(self) -> int: ...
+    @property
+    def keep_full_version(self) -> bool: ...
+    @property
+    def max_supported_python(self) -> tuple[int, int]: ...
+    @property
+    def min_supported_python(self) -> tuple[int, int]: ...
+
+def format_toml(content: str, settings: Settings) -> str: ...

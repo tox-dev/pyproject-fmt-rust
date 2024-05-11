@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from textwrap import dedent
 
-from pyproject_fmt_rust import format_toml
+from pyproject_fmt_rust import Settings, format_toml
 
 
 def test_format_toml() -> None:
@@ -22,14 +22,14 @@ def test_format_toml() -> None:
     ]
     """
 
-    res = format_toml(
-        dedent(txt),
+    settings = Settings(
         column_width=120,
         indent=4,
         keep_full_version=True,
         min_supported_python=(3, 7),
         max_supported_python=(3, 8),
     )
+    res = format_toml(dedent(txt), settings)
 
     expected = """\
     [project]
