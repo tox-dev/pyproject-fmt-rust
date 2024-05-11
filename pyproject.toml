@@ -38,7 +38,7 @@ optional-dependencies.test = [
   "pytest>=8.2",
   "pytest-cov>=5",
 ]
-urls."Bug Tracker" = "https://github.com/tox-dev/pyproject-fmt-rust-rust/issues"
+urls."Bug Tracker" = "https://github.com/tox-dev/pyproject-fmt-rust/issues"
 urls."Changelog" = "https://github.com/tox-dev/pyproject-fmt-rust/releases"
 urls.Documentation = "https://github.com/tox-dev/pyproject-fmt-rust/"
 urls."Source Code" = "https://github.com/tox-dev/pyproject-fmt-rust"
