@@ -212,7 +212,7 @@ fn generate_classifiers_to_entry(
                     let mut count = 0;
                     let delete = existing
                         .iter()
-                        .filter(|e| e.starts_with("Programming Language :: Python :: ") && !must_have.contains(*e))
+                        .filter(|e| e.starts_with("Programming Language :: Python :: 3") && !must_have.contains(*e))
                         .collect::<HashSet<&String>>();
                     let mut to_insert = Vec::<SyntaxElement>::new();
                     let mut delete_mode = false;
