@@ -62,19 +62,11 @@ jobs:
         platform:
           - runner: windows-latest
             target: x64
-            interpreter: "3.8 pypy3.8 pypy3.9 pypy3.10"
+            interpreter: "3.8 pypy3.9 pypy3.10"
           - runner: windows-latest
             target: x86
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        if: matrix.platform.target == 'x64'
-        with:
-          python-version: |
-            pypy3.8
-            pypy3.9
-            pypy3.10
-          architecture: ${{ matrix.platform.target }}
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -98,9 +90,6 @@ jobs:
             target: aarch64
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
