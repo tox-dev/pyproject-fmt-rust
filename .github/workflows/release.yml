@@ -23,6 +23,7 @@ jobs:
         platform:
           - runner: ubuntu-latest
             target: x86_64
+            interpreter: "3.8 pypy3.8 pypy3.9 pypy3.10"
           - runner: ubuntu-latest
             target: x86
           - runner: ubuntu-latest
@@ -41,14 +42,11 @@ jobs:
             target: ppc64le
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist
+          args: --release --out dist --interpreter ${{ matrix.platform.interpreter || '3.8' }}
           sccache: 'true'
           manylinux: ${{ matrix.platform.manylinux || 'auto' }}
       - name: Upload wheels
@@ -68,15 +66,11 @@ jobs:
             target: x86
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          architecture: ${{ matrix.platform.target }}
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist
+          args: --release --out dist --interpreter ${{ matrix.platform.interpreter || '3.8' }}
           sccache: 'true'
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -95,14 +89,11 @@ jobs:
             target: aarch64
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist
+          args: --release --out dist --interpreter "3.8 pypy3.8 pypy3.9 pypy3.10"
           sccache: 'true'
       - name: Upload wheels
         uses: actions/upload-artifact@v4
