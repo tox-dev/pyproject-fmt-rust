@@ -1,5 +1,6 @@
 [package]
 name = "pyproject-fmt-rust"
+rust-version = "1.78.0"
 version = "1.0.4"
 description = "Format pyproject.toml files"
 repository = "https://github.com/tox-dev/pyproject-fmt"

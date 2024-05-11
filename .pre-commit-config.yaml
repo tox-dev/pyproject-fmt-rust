@@ -29,6 +29,21 @@ repos:
       - id: ruff-format
       - id: ruff
         args: [ "--fix", "--unsafe-fixes", "--exit-non-zero-on-fix" ]
+  - repo: local
+    hooks:
+      - id: rustfmt
+        name: rustfmt
+        entry: rustfmt
+        language: rust
+        language_version: "1.78"
+        types: [ rust ]
+      - id: clippy
+        name: clippy
+        entry: cargo clippy --all-targets --all-features --fix --allow-dirty --allow-staged --offline
+        language: rust
+        language_version: "1.78"
+        types: [ rust ]
+        pass_filenames: false
   - repo: meta
     hooks:
       - id: check-hooks-apply
