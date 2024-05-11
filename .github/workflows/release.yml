@@ -18,12 +18,19 @@ jobs:
   linux:
     runs-on: ${{ matrix.platform.runner }}
     strategy:
+      fail-fast: false
       matrix:
         platform:
           - runner: ubuntu-latest
             target: x86_64
           - runner: ubuntu-latest
             target: x86
+          - runner: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            manylinux: musllinux_1_1
+          - runner: ubuntu-latest
+            target: i686-unknown-linux-musl
+            manylinux: musllinux_1_1
           - runner: ubuntu-latest
             target: aarch64
           - runner: ubuntu-latest
@@ -43,7 +50,7 @@ jobs:
           target: ${{ matrix.platform.target }}
           args: --release --out dist
           sccache: 'true'
-          manylinux: auto
+          manylinux: ${{ matrix.platform.manylinux || 'auto' }}
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
