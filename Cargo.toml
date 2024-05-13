@@ -13,8 +13,8 @@ path = "rust/src/main.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
-taplo = { version = "0.13.0" }                          # formatter
-pyo3 = { version = "0.21.2", features = ["abi3-py38"] } # integration with Python
+taplo = { version = "0.13.0" }  # formatter
+pyo3 = { version = "0.21.2", features = ["abi3-py38", "generate-import-lib"] }
 pep440_rs = { version = "0.6.0" }
 pep508_rs = { version = "0.6.0" }
 lexical-sort = { version = "0.3.1" }
