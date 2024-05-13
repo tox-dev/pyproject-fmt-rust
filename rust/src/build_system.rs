@@ -2,7 +2,7 @@ use crate::helpers::array::{sort, transform};
 use crate::helpers::pep508::{format_requirement, get_canonic_requirement_name};
 use crate::helpers::table::{for_entries, reorder_table_keys, Tables};
 
-pub fn fix_build(tables: &mut Tables, keep_full_version: bool) {
+pub fn fix(tables: &mut Tables, keep_full_version: bool) {
     let table_element = tables.get(&String::from("build-system"));
     if table_element.is_none() {
         return;
@@ -29,14 +29,14 @@ mod tests {
     use taplo::parser::parse;
     use taplo::syntax::SyntaxElement;
 
-    use crate::build_system::fix_build;
+    use crate::build_system::fix;
     use crate::helpers::table::Tables;
 
     fn evaluate(start: &str, keep_full_version: bool) -> String {
         let root_ast = parse(start).into_syntax().clone_for_update();
         let count = root_ast.children_with_tokens().count();
         let mut tables = Tables::from_ast(&root_ast);
-        fix_build(&mut tables, keep_full_version);
+        fix(&mut tables, keep_full_version);
         let entries = tables
             .table_set
             .iter()

@@ -5,16 +5,15 @@ use pyo3::{pyclass, pyfunction, pymethods, pymodule, wrap_pyfunction, Bound, PyR
 use taplo::formatter::{format_syntax, Options};
 use taplo::parser::parse;
 
-use crate::build_system::fix_build;
 use crate::global::reorder_tables;
 use crate::helpers::table::Tables;
-use crate::project::fix_project_table;
 
 mod build_system;
 mod project;
 
 mod global;
 mod helpers;
+mod ruff;
 
 #[pyclass(frozen, get_all)]
 pub struct Settings {
@@ -53,13 +52,14 @@ pub fn format_toml(content: &str, opt: &Settings) -> String {
     let root_ast = parse(content).into_syntax().clone_for_update();
     let mut tables = Tables::from_ast(&root_ast);
 
-    fix_build(&mut tables, opt.keep_full_version);
-    fix_project_table(
+    build_system::fix(&mut tables, opt.keep_full_version);
+    project::fix(
         &mut tables,
         opt.keep_full_version,
         opt.max_supported_python,
         opt.min_supported_python,
     );
+    ruff::fix(&mut tables);
     reorder_tables(&root_ast, &mut tables);
 
     let options = Options {

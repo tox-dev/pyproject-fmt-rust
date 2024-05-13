@@ -119,28 +119,32 @@ fn get_key(k: &str) -> String {
 }
 
 pub fn reorder_table_keys(table: &mut RefMut<Vec<SyntaxElement>>, order: &[&str]) {
-    let size = table.len();
-    let (key_to_pos, key_set) = load_keys(table);
-    let mut to_insert = Vec::<SyntaxElement>::new();
-    let mut handled = HashSet::<usize>::new();
-    for key in order {
-        let mut parts = key_to_pos
-            .keys()
-            .filter(|k| {
-                key == k || (k.starts_with(key) && k.len() > key.len() && k.chars().nth(key.len()).unwrap() == '.')
+    let (size, mut to_insert) = (table.len(), Vec::<SyntaxElement>::new());
+    let (key_to_position, key_set) = load_keys(table);
+    let mut handled_positions = HashSet::<usize>::new();
+    for current_key in order {
+        let mut matching_keys = key_to_position
+            .iter()
+            .filter(|(checked_key, position)| {
+                !handled_positions.contains(position)
+                    && (current_key == checked_key
+                        || (checked_key.starts_with(current_key)
+                            && checked_key.len() > current_key.len()
+                            && checked_key.chars().nth(current_key.len()).unwrap() == '.'))
             })
+            .map(|(key, _)| key)
             .clone()
             .collect::<Vec<&String>>();
-        parts.sort_by_key(|s| s.to_lowercase().replace('"', ""));
-        for element in parts {
-            let pos = key_to_pos[element];
-            to_insert.extend(key_set[pos].clone());
-            handled.insert(pos);
+        matching_keys.sort_by_key(|key| key.to_lowercase().replace('"', ""));
+        for key in matching_keys {
+            let position = key_to_position[key];
+            to_insert.extend(key_set[position].clone());
+            handled_positions.insert(position);
         }
     }
-    for (at, entry) in key_set.into_iter().enumerate() {
-        if !handled.contains(&at) {
-            to_insert.extend(entry);
+    for (position, entries) in key_set.into_iter().enumerate() {
+        if !handled_positions.contains(&position) {
+            to_insert.extend(entries);
         }
     }
     table.splice(0..size, to_insert);
