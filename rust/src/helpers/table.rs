@@ -1,7 +1,8 @@
 use std::cell::{RefCell, RefMut};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
 use std::iter::zip;
 
+use indexmap::IndexMap;
 use taplo::syntax::SyntaxKind::{TABLE_ARRAY_HEADER, TABLE_HEADER};
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 use taplo::HashSet;
@@ -11,8 +12,8 @@ use crate::helpers::string::load_text;
 
 #[derive(Debug)]
 pub struct Tables {
-    // headers would be enumerated in sorted order
-    pub header_to_pos: BTreeMap<String, usize>,
+    // headers would be enumerated in insertion order
+    pub header_to_pos: IndexMap<String, usize>,
     pub table_set: Vec<RefCell<Vec<SyntaxElement>>>,
 }
 
@@ -26,7 +27,7 @@ impl Tables {
     }
 
     pub fn from_ast(root_ast: &SyntaxNode) -> Self {
-        let mut header_to_pos = BTreeMap::<String, usize>::new();
+        let mut header_to_pos = IndexMap::<String, usize>::new();
         let mut table_set = Vec::<RefCell<Vec<SyntaxElement>>>::new();
         let entry_set = RefCell::new(Vec::<SyntaxElement>::new());
         let mut add_to_table_set = || {
@@ -80,7 +81,7 @@ impl Tables {
     }
 }
 
-fn calculate_order(header_to_pos: &BTreeMap<String, usize>, ordering: &[&str]) -> Vec<String> {
+fn calculate_order(header_to_pos: &IndexMap<String, usize>, ordering: &[&str]) -> Vec<String> {
     let max_ordering = ordering.len() * 2;
     let key_to_pos = ordering
         .iter()

@@ -135,10 +135,10 @@ mod tests {
     [tool.pytest]
     mk = "mv"
 
-    [tool.coverage.paths]
-    ab = "bc"
     [tool.coverage.report]
     cd = "de"
+    [tool.coverage.paths]
+    ab = "bc"
     [tool.coverage.run]
     ef = "fg"
 

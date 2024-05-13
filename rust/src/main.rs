@@ -180,10 +180,10 @@ mod tests {
     #[case::subsubtable(
         indoc ! {r#"
     [project]
-    [tool.coverage.paths]
-    a = 1
     [tool.coverage.report]
     a = 2
+    [tool.coverage.paths]
+    a = 1
     [tool.coverage.run]
     a = 3
     "#},
@@ -193,10 +193,10 @@ mod tests {
       "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.8",
     ]
-    [tool.coverage.paths]
-    a = 1
     [tool.coverage.report]
     a = 2
+    [tool.coverage.paths]
+    a = 1
     [tool.coverage.run]
     a = 3
     "#},
