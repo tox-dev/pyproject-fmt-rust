@@ -87,22 +87,21 @@ fn calculate_order(header_to_pos: &HashMap<String, usize>, ordering: &[&str]) ->
         .map(|(k, v)| (v, k * 2))
         .collect::<HashMap<&&str, usize>>();
 
-    // order headers by pos
     let mut header_pos: Vec<(String, usize)> = header_to_pos.clone().into_iter().collect();
-    header_pos.sort_by_key(|&(_, v)| v);
-    let mut order: Vec<String> = header_pos.into_iter().map(|(k, _)| k).collect();
 
-    order.sort_by_cached_key(|k| -> usize {
+    header_pos.sort_by_cached_key(|(k, file_pos)| -> (usize, usize) {
         let key = get_key(k);
         let pos = key_to_pos.get(&key.as_str());
-        if pos.is_some() {
-            let offset = usize::from(key != *k);
-            pos.unwrap() + offset
-        } else {
-            max_ordering + header_to_pos[k]
+
+        match pos {
+            Some(&pos) => {
+                let offset = usize::from(key != *k);
+                (pos + offset, *file_pos)
+            }
+            None => (max_ordering + *file_pos, 0),
         }
     });
-    order
+    header_pos.into_iter().map(|(k, _)| k).collect()
 }
 
 fn get_key(k: &str) -> String {
