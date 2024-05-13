@@ -93,13 +93,15 @@ fn calculate_order(header_to_pos: &HashMap<String, usize>, ordering: &[&str]) ->
         let key = get_key(k);
         let pos = key_to_pos.get(&key.as_str());
 
-        match pos {
-            Some(&pos) => {
+        (
+            if let Some(&pos) = pos {
                 let offset = usize::from(key != *k);
-                (pos + offset, *file_pos)
-            }
-            None => (max_ordering + *file_pos, 0),
-        }
+                pos + offset
+            } else {
+                max_ordering
+            },
+            *file_pos,
+        )
     });
     header_pos.into_iter().map(|(k, _)| k).collect()
 }
