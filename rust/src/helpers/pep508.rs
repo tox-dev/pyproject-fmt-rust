@@ -1,6 +1,7 @@
 use std::fmt::Write;
 use std::str::FromStr;
 
+use pep440_rs::Operator;
 use pep508_rs::{MarkerTree, Requirement, VersionOrUrl};
 
 pub fn format_requirement(value: &str, keep_full_version: bool) -> String {
@@ -23,7 +24,7 @@ pub fn format_requirement(value: &str, keep_full_version: bool) -> String {
                 let extra_count = v.len() - 1;
                 for (at, spec) in v.iter().enumerate() {
                     let mut spec_repr = format!("{spec}");
-                    if !keep_full_version {
+                    if !keep_full_version && spec.operator() != &Operator::TildeEqual {
                         loop {
                             let propose = spec_repr.strip_suffix(".0");
                             if propose.is_none() {
@@ -39,7 +40,7 @@ pub fn format_requirement(value: &str, keep_full_version: bool) -> String {
                 }
             }
             VersionOrUrl::Url(u) => {
-                write!(&mut result, "{u}").unwrap();
+                write!(&mut result, " @ {u}").unwrap();
             }
         }
     }
@@ -109,7 +110,16 @@ mod tests {
     "requests[security,tests]>=2.0.0,==2.8.*; (os_name=='a' or os_name=='b') and os_name=='c' and python_version>'3.8'",
     true
     )]
+    #[case::do_not_strip_tilda("a~=3.0.0", "a~=3.0.0", false)]
+    #[case::url(
+        " pip   @   https://github.com/pypa/pip/archive/1.3.1.zip#sha1=da9234ee9982d4bbb3c72346a6de940a148ea686 ",
+        "pip @ https://github.com/pypa/pip/archive/1.3.1.zip#sha1=da9234ee9982d4bbb3c72346a6de940a148ea686",
+        true
+    )]
     fn test_format_requirement(#[case] start: &str, #[case] expected: &str, #[case] keep_full_version: bool) {
-        assert_eq!(format_requirement(start, keep_full_version), expected);
+        let got = format_requirement(start, keep_full_version);
+        assert_eq!(got, expected);
+        // formatting remains stable
+        assert_eq!(format_requirement(got.as_str(), keep_full_version), expected);
     }
 }

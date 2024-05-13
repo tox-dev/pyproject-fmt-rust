@@ -402,9 +402,9 @@ dependencies = [
 
 [[package]]
 name = "pep508_rs"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fa3d4bcbc98074b50cdfd37e7ca597aec4d816252af135a7e3ad2e67d1ad6f66"
+checksum = "581c27e97a3f38c5d691962af7da93c2672b5227d59cf165b87a9b1fd53dd724"
 dependencies = [
  "derivative",
  "once_cell",
@@ -520,10 +520,11 @@ dependencies = [
 
 [[package]]
 name = "pyproject-fmt-rust"
-version = "1.0.4"
+version = "1.0.6"
 dependencies = [
  "indoc",
  "lexical-sort",
+ "pep440_rs",
  "pep508_rs",
  "pyo3",
  "regex",
