@@ -177,6 +177,37 @@ mod tests {
         true,
         (3, 8)
     )]
+    #[case::subsubtable(
+        indoc ! {r#"
+    [project]
+    [tool.coverage.report]
+    a = 2
+    [tool.coverage]
+    a = 0
+    [tool.coverage.paths]
+    a = 1
+    [tool.coverage.run]
+    a = 3
+    "#},
+        indoc ! {r#"
+    [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
+    [tool.coverage]
+    a = 0
+    [tool.coverage.report]
+    a = 2
+    [tool.coverage.paths]
+    a = 1
+    [tool.coverage.run]
+    a = 3
+    "#},
+        2,
+        true,
+        (3, 8)
+    )]
     fn test_format_toml(
         #[case] start: &str,
         #[case] expected: &str,
