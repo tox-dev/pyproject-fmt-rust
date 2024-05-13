@@ -67,6 +67,12 @@ jobs:
             target: x86
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: |
+            pypy3.8
+            pypy3.9
+            pypy3.10
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
