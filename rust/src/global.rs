@@ -103,6 +103,8 @@ mod tests {
     ed = "ed"
     [tool.coverage.report]
     cd="de"
+    [tool.coverage]
+    aa = "bb"
     [tool.coverage.paths]
     ab="bc"
     [tool.coverage.run]
@@ -135,6 +137,8 @@ mod tests {
     [tool.pytest]
     mk = "mv"
 
+    [tool.coverage]
+    aa = "bb"
     [tool.coverage.report]
     cd = "de"
     [tool.coverage.paths]

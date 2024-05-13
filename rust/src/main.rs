@@ -182,6 +182,8 @@ mod tests {
     [project]
     [tool.coverage.report]
     a = 2
+    [tool.coverage]
+    a = 0
     [tool.coverage.paths]
     a = 1
     [tool.coverage.run]
@@ -193,6 +195,8 @@ mod tests {
       "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.8",
     ]
+    [tool.coverage]
+    a = 0
     [tool.coverage.report]
     a = 2
     [tool.coverage.paths]

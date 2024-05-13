@@ -2,7 +2,6 @@ use std::cell::{RefCell, RefMut};
 use std::collections::HashMap;
 use std::iter::zip;
 
-use indexmap::IndexMap;
 use taplo::syntax::SyntaxKind::{TABLE_ARRAY_HEADER, TABLE_HEADER};
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 use taplo::HashSet;
@@ -12,8 +11,7 @@ use crate::helpers::string::load_text;
 
 #[derive(Debug)]
 pub struct Tables {
-    // headers would be enumerated in insertion order
-    pub header_to_pos: IndexMap<String, usize>,
+    pub header_to_pos: HashMap<String, usize>,
     pub table_set: Vec<RefCell<Vec<SyntaxElement>>>,
 }
 
@@ -27,7 +25,7 @@ impl Tables {
     }
 
     pub fn from_ast(root_ast: &SyntaxNode) -> Self {
-        let mut header_to_pos = IndexMap::<String, usize>::new();
+        let mut header_to_pos = HashMap::<String, usize>::new();
         let mut table_set = Vec::<RefCell<Vec<SyntaxElement>>>::new();
         let entry_set = RefCell::new(Vec::<SyntaxElement>::new());
         let mut add_to_table_set = || {
@@ -81,7 +79,7 @@ impl Tables {
     }
 }
 
-fn calculate_order(header_to_pos: &IndexMap<String, usize>, ordering: &[&str]) -> Vec<String> {
+fn calculate_order(header_to_pos: &HashMap<String, usize>, ordering: &[&str]) -> Vec<String> {
     let max_ordering = ordering.len() * 2;
     let key_to_pos = ordering
         .iter()
@@ -89,7 +87,11 @@ fn calculate_order(header_to_pos: &IndexMap<String, usize>, ordering: &[&str]) -
         .map(|(k, v)| (v, k * 2))
         .collect::<HashMap<&&str, usize>>();
 
-    let mut order: Vec<String> = header_to_pos.clone().into_keys().collect();
+    // order headers by pos
+    let mut header_pos: Vec<(String, usize)> = header_to_pos.clone().into_iter().collect();
+    header_pos.sort_by_key(|&(_, v)| v);
+    let mut order: Vec<String> = header_pos.into_iter().map(|(k, _)| k).collect();
+
     order.sort_by_cached_key(|k| -> usize {
         let key = get_key(k);
         let pos = key_to_pos.get(&key.as_str());
