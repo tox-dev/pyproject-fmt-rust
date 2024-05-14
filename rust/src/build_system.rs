@@ -7,7 +7,7 @@ pub fn fix(tables: &mut Tables, keep_full_version: bool) {
     if table_element.is_none() {
         return;
     }
-    let table = &mut table_element.unwrap().borrow_mut();
+    let table = &mut table_element.unwrap().first().unwrap().borrow_mut();
     for_entries(table, &mut |key, entry| match key.as_str() {
         "requires" => {
             transform(entry, &|s| format_requirement(s, keep_full_version));
@@ -84,38 +84,33 @@ mod tests {
     "#},
         true
     )]
-    // #[case::build_system_order(
-    // indoc ! {r#"
-    // [build-system]
-    // # more
-    // more = true # more post
-    // #  extra
-    // extra = 1 # extra post
-    // # path
-    // backend-path = ['A'] # path post
-    // # requires
-    // requires = ["B"] # requires post
-    // # backend
-    // build-backend = "hatchling.build" # backend post
-    // # post
-    // "#},
-    // indoc ! {r#"
-    // [build-system]
-    // # more
-    // build-backend = "hatchling.build" # backend post
-    // # post
-    // requires = ["b"] # requires post
-    // # backend
-    // backend-path = ['A'] # path post
-    // # requires
-    // more = true # more post
-    // #  extra
-    // extra = 1 # extra post
-    // # path
-    // "#},
-    // true
-    // )]
-    fn test_normalize_requirement(#[case] start: &str, #[case] expected: &str, #[case] keep_full_version: bool) {
+    #[case::join(
+        indoc ! {r#"
+    [build-system]
+    requires=["a"]
+    [build-system]
+    build-backend = "hatchling.build"
+    [[build-system.a]]
+    name = "Hammer"
+    [[build-system.a]]  # empty table within the array
+    [[build-system.a]]
+    name = "Nail"
+    "#},
+        indoc ! {r#"
+    [build-system]
+    build-backend = "hatchling.build"
+    requires = [
+      "a",
+    ]
+    [[build-system.a]]
+    name = "Hammer"
+    [[build-system.a]] # empty table within the array
+    [[build-system.a]]
+    name = "Nail"
+    "#},
+        false
+    )]
+    fn test_format_build_systems(#[case] start: &str, #[case] expected: &str, #[case] keep_full_version: bool) {
         assert_eq!(evaluate(start, keep_full_version), expected);
     }
 }
