@@ -11,7 +11,7 @@ use crate::helpers::pep508::{format_requirement, get_canonic_requirement_name};
 use crate::helpers::string::{load_text, update_content};
 use crate::helpers::table::{collapse_sub_tables, for_entries, reorder_table_keys, Tables};
 
-pub fn fix_project_table(
+pub fn fix(
     tables: &mut Tables,
     keep_full_version: bool,
     max_supported_python: (u8, u8),
@@ -376,13 +376,13 @@ mod tests {
     use taplo::syntax::SyntaxElement;
 
     use crate::helpers::table::Tables;
-    use crate::project::fix_project_table;
+    use crate::project::fix;
 
     fn evaluate(start: &str, keep_full_version: bool, max_supported_python: (u8, u8)) -> String {
         let root_ast = parse(start).into_syntax().clone_for_update();
         let count = root_ast.children_with_tokens().count();
         let mut tables = Tables::from_ast(&root_ast);
-        fix_project_table(&mut tables, keep_full_version, max_supported_python, (3, 8));
+        fix(&mut tables, keep_full_version, max_supported_python, (3, 8));
         let entries = tables
             .table_set
             .iter()
