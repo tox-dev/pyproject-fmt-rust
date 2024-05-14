@@ -22,7 +22,7 @@ pub fn fix(
     if table_element.is_none() {
         return;
     }
-    let table = &mut table_element.unwrap().borrow_mut();
+    let table = &mut table_element.unwrap().first().unwrap().borrow_mut();
     expand_entry_points_inline_tables(table);
     for_entries(table, &mut |key, entry| match key.split('.').next().unwrap() {
         "name" => {

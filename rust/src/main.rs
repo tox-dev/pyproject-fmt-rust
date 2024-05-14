@@ -209,6 +209,36 @@ mod tests {
         true,
         (3, 8)
     )]
+    #[case::array_of_tables(
+        indoc ! {r#"
+        [tool.commitizen]
+        name = "cz_customize"
+
+        [tool.commitizen.customize]
+        message_template = ""
+
+        [[tool.commitizen.customize.questions]]
+        type = "list"
+        [[tool.commitizen.customize.questions]]
+        type = "input"
+    "#},
+        indoc ! {r#"
+    [tool.commitizen]
+    name = "cz_customize"
+
+    [tool.commitizen.customize]
+    message_template = ""
+
+    [[tool.commitizen.customize.questions]]
+    type = "list"
+
+    [[tool.commitizen.customize.questions]]
+    type = "input"
+    "#},
+        2,
+        true,
+        (3, 8)
+    )]
     fn test_format_toml(
         #[case] start: &str,
         #[case] expected: &str,

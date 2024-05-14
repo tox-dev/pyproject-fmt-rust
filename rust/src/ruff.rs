@@ -9,7 +9,7 @@ pub fn fix(tables: &mut Tables) {
     if table_element.is_none() {
         return;
     }
-    let table = &mut table_element.unwrap().borrow_mut();
+    let table = &mut table_element.unwrap().first().unwrap().borrow_mut();
     for_entries(table, &mut |key, entry| match key.as_str() {
         "target-version"
         | "cache-dir"

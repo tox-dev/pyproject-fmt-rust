@@ -1,6 +1,7 @@
 use std::cell::{RefCell, RefMut};
 use std::collections::HashMap;
 use std::iter::zip;
+use std::ops::Index;
 
 use taplo::syntax::SyntaxKind::{TABLE_ARRAY_HEADER, TABLE_HEADER};
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
@@ -11,39 +12,57 @@ use crate::helpers::string::load_text;
 
 #[derive(Debug)]
 pub struct Tables {
-    pub header_to_pos: HashMap<String, usize>,
+    pub header_to_pos: HashMap<String, Vec<usize>>,
     pub table_set: Vec<RefCell<Vec<SyntaxElement>>>,
 }
 
 impl Tables {
-    pub(crate) fn get(&mut self, key: &str) -> Option<&RefCell<Vec<SyntaxElement>>> {
+    pub(crate) fn get(&mut self, key: &str) -> Option<Vec<&RefCell<Vec<SyntaxElement>>>> {
         if self.header_to_pos.contains_key(key) {
-            Some(&self.table_set[self.header_to_pos[key]])
+            let mut res = Vec::<&RefCell<Vec<SyntaxElement>>>::new();
+            for pos in &self.header_to_pos[key] {
+                res.push(&self.table_set[*pos]);
+            }
+            Some(res)
         } else {
             None
         }
     }
 
     pub fn from_ast(root_ast: &SyntaxNode) -> Self {
-        let mut header_to_pos = HashMap::<String, usize>::new();
+        let mut header_to_pos = HashMap::<String, Vec<usize>>::new();
         let mut table_set = Vec::<RefCell<Vec<SyntaxElement>>>::new();
         let entry_set = RefCell::new(Vec::<SyntaxElement>::new());
-        let mut add_to_table_set = || {
+        let mut table_kind = TABLE_HEADER;
+        let mut add_to_table_set = |kind| {
             let mut entry_set_borrow = entry_set.borrow_mut();
             if !entry_set_borrow.is_empty() {
-                header_to_pos.insert(get_table_name(&entry_set_borrow[0]), table_set.len());
-                table_set.push(RefCell::new(entry_set_borrow.clone()));
+                let table_name = get_table_name(&entry_set_borrow[0]);
+                let indexes = header_to_pos.entry(table_name).or_default();
+                if kind == TABLE_ARRAY_HEADER || (kind == TABLE_HEADER && indexes.is_empty()) {
+                    indexes.push(table_set.len());
+                    table_set.push(RefCell::new(entry_set_borrow.clone()));
+                } else if kind == TABLE_HEADER && !indexes.is_empty() {
+                    // join tables
+                    let pos = indexes.first().unwrap();
+                    let mut res = table_set.index(*pos).borrow_mut();
+                    for element in entry_set_borrow.clone() {
+                        if element.kind() != TABLE_HEADER {
+                            res.push(element);
+                        }
+                    }
+                }
                 entry_set_borrow.clear();
             }
         };
         for c in root_ast.children_with_tokens() {
             if [TABLE_ARRAY_HEADER, TABLE_HEADER].contains(&c.kind()) {
-                add_to_table_set();
+                add_to_table_set(table_kind);
+                table_kind = c.kind();
             }
             entry_set.borrow_mut().push(c);
         }
-        add_to_table_set();
-
+        add_to_table_set(table_kind);
         Self {
             header_to_pos,
             table_set,
@@ -61,29 +80,31 @@ impl Tables {
         }
         next.push(String::new());
         for (name, next_name) in zip(order.iter(), next.iter()) {
-            let entries = self.get(name).unwrap().borrow();
-            if !entries.is_empty() {
-                entry_count += entries.len();
-                let last = entries.last().unwrap();
-                if name.is_empty() && last.kind() == SyntaxKind::NEWLINE && entries.len() == 1 {
-                    continue;
-                }
-                let mut add = entries.clone();
-                if get_key(name) != get_key(next_name) {
-                    if last.kind() == SyntaxKind::NEWLINE {
-                        // replace existing newline to ensure single newline
-                        add.pop();
+            for entries in self.get(name).unwrap() {
+                let got = entries.borrow_mut();
+                if !got.is_empty() {
+                    entry_count += got.len();
+                    let last = got.last().unwrap();
+                    if name.is_empty() && last.kind() == SyntaxKind::NEWLINE && got.len() == 1 {
+                        continue;
                     }
-                    add.push(make_empty_newline());
+                    let mut add = got.clone();
+                    if get_key(name) != get_key(next_name) {
+                        if last.kind() == SyntaxKind::NEWLINE {
+                            // replace existing newline to ensure single newline
+                            add.pop();
+                        }
+                        add.push(make_empty_newline());
+                    }
+                    to_insert.extend(add);
                 }
-                to_insert.extend(add);
             }
         }
         root_ast.splice_children(0..entry_count, to_insert);
     }
 }
 
-fn calculate_order(header_to_pos: &HashMap<String, usize>, ordering: &[&str]) -> Vec<String> {
+fn calculate_order(header_to_pos: &HashMap<String, Vec<usize>>, ordering: &[&str]) -> Vec<String> {
     let max_ordering = ordering.len() * 2;
     let key_to_pos = ordering
         .iter()
@@ -91,7 +112,11 @@ fn calculate_order(header_to_pos: &HashMap<String, usize>, ordering: &[&str]) ->
         .map(|(k, v)| (v, k * 2))
         .collect::<HashMap<&&str, usize>>();
 
-    let mut header_pos: Vec<(String, usize)> = header_to_pos.clone().into_iter().collect();
+    let mut header_pos: Vec<(String, usize)> = header_to_pos
+        .clone()
+        .into_iter()
+        .map(|(k, v)| (k, *v.iter().min().unwrap()))
+        .collect();
 
     header_pos.sort_by_cached_key(|(k, file_pos)| -> (usize, usize) {
         let key = get_key(k);
@@ -220,12 +245,22 @@ pub fn collapse_sub_tables(tables: &mut Tables, name: &str) {
         return;
     }
     if !tables.header_to_pos.contains_key(name) {
-        tables.header_to_pos.insert(String::from(name), tables.table_set.len());
+        tables
+            .header_to_pos
+            .insert(String::from(name), vec![tables.table_set.len()]);
         tables.table_set.push(RefCell::new(make_table_entry(name)));
     }
-    let mut main = tables.table_set[tables.header_to_pos[name]].borrow_mut();
+    let main_positions = tables.header_to_pos[name].clone();
+    if main_positions.len() != 1 {
+        return;
+    }
+    let mut main = tables.table_set[*main_positions.first().unwrap()].borrow_mut();
     for key in sub_table_keys {
-        let mut sub = tables.table_set[tables.header_to_pos[key]].borrow_mut();
+        let sub_positions = tables.header_to_pos[key].clone();
+        if sub_positions.len() != 1 {
+            continue;
+        }
+        let mut sub = tables.table_set[*sub_positions.first().unwrap()].borrow_mut();
         let sub_name = key.strip_prefix(sub_name_prefix.as_str()).unwrap();
         let mut header = false;
         for child in sub.iter() {
