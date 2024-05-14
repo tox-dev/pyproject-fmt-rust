@@ -61,19 +61,23 @@ impl Tables {
         }
         next.push(String::new());
         for (name, next_name) in zip(order.iter(), next.iter()) {
-            let mut entries = self.get(name).unwrap().borrow().clone();
-            if entries.is_empty() {
-                continue;
+            let entries = self.get(name).unwrap().borrow();
+            if !entries.is_empty() {
+                entry_count += entries.len();
+                let last = entries.last().unwrap();
+                if name.is_empty() && last.kind() == SyntaxKind::NEWLINE && entries.len() == 1 {
+                    continue;
+                }
+                let mut add = entries.clone();
+                if get_key(name) != get_key(next_name) {
+                    if last.kind() == SyntaxKind::NEWLINE {
+                        // replace existing newline to ensure single newline
+                        add.pop();
+                    }
+                    add.push(make_empty_newline());
+                }
+                to_insert.extend(add);
             }
-            entry_count += entries.len();
-            let last = entries.last().unwrap();
-            if name.is_empty() && last.kind() == SyntaxKind::NEWLINE && entries.len() == 1 {
-                continue;
-            }
-            if last.kind() == SyntaxKind::NEWLINE && get_key(name) != get_key(next_name) {
-                entries.splice(entries.len() - 1..entries.len(), [make_empty_newline()]);
-            }
-            to_insert.extend(entries);
         }
         root_ast.splice_children(0..entry_count, to_insert);
     }
