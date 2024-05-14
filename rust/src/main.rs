@@ -195,6 +195,7 @@ mod tests {
       "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.8",
     ]
+
     [tool.coverage]
     a = 0
     [tool.coverage.report]
@@ -215,16 +216,16 @@ mod tests {
         #[case] keep_full_version: bool,
         #[case] max_supported_python: (u8, u8),
     ) {
-        let got = format_toml(
-            start,
-            &Settings {
-                column_width: 1,
-                indent,
-                keep_full_version,
-                max_supported_python,
-                min_supported_python: (3, 8),
-            },
-        );
+        let settings = Settings {
+            column_width: 1,
+            indent,
+            keep_full_version,
+            max_supported_python,
+            min_supported_python: (3, 8),
+        };
+        let got = format_toml(start, &settings);
         assert_eq!(got, expected);
+        let second = format_toml(got.as_str(), &settings);
+        assert_eq!(got, second);
     }
 }
