@@ -72,8 +72,7 @@ impl Tables {
     pub fn reorder(&mut self, root_ast: &SyntaxNode, order: &[&str]) {
         let mut to_insert = Vec::<SyntaxElement>::new();
         let mut entry_count: usize = 0;
-
-        let order = calculate_order(&self.header_to_pos, order);
+        let order = calculate_order(&self.header_to_pos, &self.table_set, order);
         let mut next = order.clone();
         if !next.is_empty() {
             next.remove(0);
@@ -104,7 +103,11 @@ impl Tables {
     }
 }
 
-fn calculate_order(header_to_pos: &HashMap<String, Vec<usize>>, ordering: &[&str]) -> Vec<String> {
+fn calculate_order(
+    header_to_pos: &HashMap<String, Vec<usize>>,
+    table_set: &[RefCell<Vec<SyntaxElement>>],
+    ordering: &[&str],
+) -> Vec<String> {
     let max_ordering = ordering.len() * 2;
     let key_to_pos = ordering
         .iter()
@@ -115,6 +118,7 @@ fn calculate_order(header_to_pos: &HashMap<String, Vec<usize>>, ordering: &[&str
     let mut header_pos: Vec<(String, usize)> = header_to_pos
         .clone()
         .into_iter()
+        .filter(|(_k, v)| v.iter().any(|p| !table_set.get(*p).unwrap().borrow().is_empty()))
         .map(|(k, v)| (k, *v.iter().min().unwrap()))
         .collect();
 
