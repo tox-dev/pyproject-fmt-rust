@@ -773,7 +773,7 @@ mod tests {
         true,
         (3, 8),
     )]
-    #[case::project_scritps_collapse(
+    #[case::project_scripts_collapse(
         indoc ! {r#"
     [project.scripts]
     c = 'd'
