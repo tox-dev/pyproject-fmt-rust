@@ -178,7 +178,7 @@ mod tests {
         (3, 8)
     )]
     #[case::subsubtable(
-        indoc ! {r#"
+        indoc ! {r"
     [project]
     [tool.coverage.report]
     a = 2
@@ -188,7 +188,7 @@ mod tests {
     a = 1
     [tool.coverage.run]
     a = 3
-    "#},
+    "},
         indoc ! {r#"
     [project]
     classifiers = [
@@ -239,6 +239,36 @@ mod tests {
         true,
         (3, 8)
     )]
+    #[case::unstable_issue_18(
+        indoc ! {r#"
+    [project]
+    requires-python = "==3.12"
+    classifiers = [
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.12",
+    ]
+    [project.urls]
+    Source = "https://github.com/VWS-Python/vws-python-mock"
+
+    [tool.setuptools]
+    zip-safe = false
+    "#},
+        indoc ! {r#"
+    [project]
+    requires-python = "==3.12"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.12",
+    ]
+    urls.Source = "https://github.com/VWS-Python/vws-python-mock"
+
+    [tool.setuptools]
+    zip-safe = false
+    "#},
+        2,
+        true,
+        (3, 8)
+    )]
     fn test_format_toml(
         #[case] start: &str,
         #[case] expected: &str,
@@ -256,6 +286,6 @@ mod tests {
         let got = format_toml(start, &settings);
         assert_eq!(got, expected);
         let second = format_toml(got.as_str(), &settings);
-        assert_eq!(got, second);
+        assert_eq!(second, got);
     }
 }
