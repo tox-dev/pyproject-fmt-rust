@@ -1,7 +1,10 @@
 use std::cell::RefMut;
 
 use regex::Regex;
-use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
+use taplo::syntax::SyntaxKind::{
+    ARRAY, BRACKET_END, BRACKET_START, COMMA, ENTRY, IDENT, INLINE_TABLE, KEY, NEWLINE, STRING, VALUE,
+};
+use taplo::syntax::{SyntaxElement, SyntaxNode};
 use taplo::util::StrExt;
 use taplo::HashSet;
 
@@ -102,38 +105,33 @@ fn expand_entry_points_inline_tables(table: &mut RefMut<Vec<SyntaxElement>>) {
     let (mut to_insert, mut count, mut key) = (Vec::<SyntaxElement>::new(), 0, String::new());
     for s_table_entry in table.iter() {
         count += 1;
-        if s_table_entry.kind() == SyntaxKind::ENTRY {
+        if s_table_entry.kind() == ENTRY {
             let mut has_inline_table = false;
             for s_in_table in s_table_entry.as_node().unwrap().children_with_tokens() {
-                if s_in_table.kind() == SyntaxKind::KEY {
+                if s_in_table.kind() == KEY {
                     key = s_in_table.as_node().unwrap().text().to_string().trim().to_string();
-                } else if key.starts_with("entry-points.") && s_in_table.kind() == SyntaxKind::VALUE {
+                } else if key.starts_with("entry-points.") && s_in_table.kind() == VALUE {
                     for s_in_value in s_in_table.as_node().unwrap().children_with_tokens() {
-                        if s_in_value.kind() == SyntaxKind::INLINE_TABLE {
+                        if s_in_value.kind() == INLINE_TABLE {
                             has_inline_table = true;
                             for s_in_inline_table in s_in_value.as_node().unwrap().children_with_tokens() {
-                                if s_in_inline_table.kind() == SyntaxKind::ENTRY {
+                                if s_in_inline_table.kind() == ENTRY {
                                     let mut with_key = String::new();
                                     for s_in_entry in s_in_inline_table.as_node().unwrap().children_with_tokens() {
-                                        if s_in_entry.kind() == SyntaxKind::KEY {
+                                        if s_in_entry.kind() == KEY {
                                             for s_in_key in s_in_entry.as_node().unwrap().children_with_tokens() {
-                                                if s_in_key.kind() == SyntaxKind::IDENT {
-                                                    with_key = load_text(
-                                                        s_in_key.as_token().unwrap().text(),
-                                                        SyntaxKind::IDENT,
-                                                    );
+                                                if s_in_key.kind() == IDENT {
+                                                    with_key = load_text(s_in_key.as_token().unwrap().text(), IDENT);
                                                     with_key = String::from(with_key.strip_quotes());
                                                     break;
                                                 }
                                             }
-                                        } else if s_in_entry.kind() == SyntaxKind::VALUE {
+                                        } else if s_in_entry.kind() == VALUE {
                                             for s_in_b_value in s_in_entry.as_node().unwrap().children_with_tokens() {
-                                                if s_in_b_value.kind() == SyntaxKind::STRING {
-                                                    let value = load_text(
-                                                        s_in_b_value.as_token().unwrap().text(),
-                                                        SyntaxKind::STRING,
-                                                    );
-                                                    if to_insert.last().unwrap().kind() != SyntaxKind::NEWLINE {
+                                                if s_in_b_value.kind() == STRING {
+                                                    let value =
+                                                        load_text(s_in_b_value.as_token().unwrap().text(), STRING);
+                                                    if to_insert.last().unwrap().kind() != NEWLINE {
                                                         to_insert.push(make_newline());
                                                     }
                                                     let new_key = format!("{key}.{with_key}");
@@ -176,11 +174,11 @@ fn generate_classifiers(
         Some(c) => {
             let mut key_value = String::new();
             for table_row in table.iter() {
-                if table_row.kind() == SyntaxKind::ENTRY {
+                if table_row.kind() == ENTRY {
                     for entry in table_row.as_node().unwrap().children_with_tokens() {
-                        if entry.kind() == SyntaxKind::KEY {
+                        if entry.kind() == KEY {
                             key_value = entry.as_node().unwrap().text().to_string().trim().to_string();
-                        } else if entry.kind() == SyntaxKind::VALUE && key_value == "classifiers" {
+                        } else if entry.kind() == VALUE && key_value == "classifiers" {
                             generate_classifiers_to_entry(table_row.as_node().unwrap(), min, max, &omit, &c);
                         }
                     }
@@ -198,9 +196,9 @@ fn generate_classifiers_to_entry(
     existing: &HashSet<String>,
 ) {
     for array in node.children_with_tokens() {
-        if array.kind() == SyntaxKind::VALUE {
+        if array.kind() == VALUE {
             for root_value in array.as_node().unwrap().children_with_tokens() {
-                if root_value.kind() == SyntaxKind::ARRAY {
+                if root_value.kind() == ARRAY {
                     let mut must_have: HashSet<String> = HashSet::new();
                     must_have.insert(String::from("Programming Language :: Python :: 3 :: Only"));
                     must_have.extend(
@@ -219,25 +217,24 @@ fn generate_classifiers_to_entry(
                     for array_entry in root_value.as_node().unwrap().children_with_tokens() {
                         count += 1;
                         let kind = array_entry.kind();
-                        if delete_mode & [SyntaxKind::NEWLINE, SyntaxKind::BRACKET_END].contains(&kind) {
+                        if delete_mode & [NEWLINE, BRACKET_END].contains(&kind) {
                             delete_mode = false;
-                            if kind == SyntaxKind::NEWLINE {
+                            if kind == NEWLINE {
                                 continue;
                             }
-                        } else if kind == SyntaxKind::VALUE {
+                        } else if kind == VALUE {
                             for array_entry_value in array_entry.as_node().unwrap().children_with_tokens() {
-                                if array_entry_value.kind() == SyntaxKind::STRING {
-                                    let txt =
-                                        load_text(array_entry_value.as_token().unwrap().text(), SyntaxKind::STRING);
+                                if array_entry_value.kind() == STRING {
+                                    let txt = load_text(array_entry_value.as_token().unwrap().text(), STRING);
                                     delete_mode = delete.contains(&txt);
                                     if delete_mode {
                                         // delete from previous comma/start until next newline
                                         let mut remove_count = to_insert.len();
                                         for (at, v) in to_insert.iter().rev().enumerate() {
-                                            if [SyntaxKind::COMMA, SyntaxKind::BRACKET_START].contains(&v.kind()) {
+                                            if [COMMA, BRACKET_START].contains(&v.kind()) {
                                                 remove_count = at;
                                                 for (i, e) in to_insert.iter().enumerate().skip(to_insert.len() - at) {
-                                                    if e.kind() == SyntaxKind::NEWLINE {
+                                                    if e.kind() == NEWLINE {
                                                         remove_count = i + 1;
                                                         break;
                                                     }
@@ -261,17 +258,17 @@ fn generate_classifiers_to_entry(
                         let mut trail_at = 0;
                         for (at, v) in to_insert.iter().rev().enumerate() {
                             trail_at = to_insert.len() - at;
-                            if v.kind() == SyntaxKind::COMMA {
+                            if v.kind() == COMMA {
                                 for (i, e) in to_insert.iter().enumerate().skip(trail_at) {
-                                    if e.kind() == SyntaxKind::NEWLINE || e.kind() == SyntaxKind::BRACKET_END {
+                                    if e.kind() == NEWLINE || e.kind() == BRACKET_END {
                                         trail_at = i;
                                         break;
                                     }
                                 }
                                 break;
-                            } else if v.kind() == SyntaxKind::BRACKET_START {
+                            } else if v.kind() == BRACKET_START {
                                 break;
-                            } else if v.kind() == SyntaxKind::VALUE {
+                            } else if v.kind() == VALUE {
                                 to_insert.insert(trail_at, make_comma());
                                 trail_at += 1;
                                 break;
@@ -308,8 +305,8 @@ fn get_python_requires_with_classifier(
     for_entries(table, &mut |key, entry| {
         if key == "requires-python" {
             for child in entry.children_with_tokens() {
-                if child.kind() == SyntaxKind::STRING {
-                    let found_str_value = load_text(child.as_token().unwrap().text(), SyntaxKind::STRING);
+                if child.kind() == STRING {
+                    let found_str_value = load_text(child.as_token().unwrap().text(), STRING);
                     let re = Regex::new(r"^(?<op><|<=|==|!=|>=|>)3[.](?<minor>\d+)").unwrap();
                     for part in found_str_value.split(',') {
                         let capture = re.captures(part);
@@ -344,12 +341,12 @@ fn get_python_requires_with_classifier(
             }
         } else if key == "classifiers" {
             for child in entry.children_with_tokens() {
-                if child.kind() == SyntaxKind::ARRAY {
+                if child.kind() == ARRAY {
                     let mut found_elements = HashSet::<String>::new();
                     for array in child.as_node().unwrap().children_with_tokens() {
-                        if array.kind() == SyntaxKind::VALUE {
+                        if array.kind() == VALUE {
                             for value in array.as_node().unwrap().children_with_tokens() {
-                                if value.kind() == SyntaxKind::STRING {
+                                if value.kind() == STRING {
                                     let found = value.as_token().unwrap().text();
                                     let found_str_value: String = String::from(&found[1..found.len() - 1]);
                                     found_elements.insert(found_str_value);

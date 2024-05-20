@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 use lexical_sort::{natural_lexical_cmp, StringSort};
+use taplo::syntax::SyntaxKind::{ARRAY, COMMA, NEWLINE, STRING, VALUE, WHITESPACE};
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 
 use crate::helpers::create::{make_comma, make_newline};
@@ -12,9 +13,9 @@ where
     F: Fn(&str) -> String,
 {
     for array in node.children_with_tokens() {
-        if array.kind() == SyntaxKind::ARRAY {
+        if array.kind() == ARRAY {
             for array_entry in array.as_node().unwrap().children_with_tokens() {
-                if array_entry.kind() == SyntaxKind::VALUE {
+                if array_entry.kind() == VALUE {
                     update_content(array_entry.as_node().unwrap(), transform);
                 }
             }
@@ -27,7 +28,7 @@ where
     F: Fn(&str) -> String,
 {
     for array in node.children_with_tokens() {
-        if array.kind() == SyntaxKind::ARRAY {
+        if array.kind() == ARRAY {
             let array_node = array.as_node().unwrap();
             let mut value_set = Vec::<Vec<SyntaxElement>>::new();
             let entry_set = RefCell::new(Vec::<SyntaxElement>::new());
@@ -53,13 +54,13 @@ where
                 if previous_is_value {
                     // make sure ends with trailing comma
                     previous_is_value = false;
-                    if entry.kind() != SyntaxKind::COMMA {
+                    if entry.kind() != COMMA {
                         entry_set.borrow_mut().push(make_comma());
                     }
                 }
                 if previous_is_bracket_open {
                     // make sure ends with trailing comma
-                    if entry.kind() == SyntaxKind::NEWLINE || entry.kind() == SyntaxKind::WHITESPACE {
+                    if entry.kind() == NEWLINE || entry.kind() == WHITESPACE {
                         continue;
                     }
                     previous_is_bracket_open = false;
@@ -78,7 +79,7 @@ where
                         }
                         entries.push(entry);
                     }
-                    SyntaxKind::VALUE => {
+                    VALUE => {
                         if has_value {
                             entry_set.borrow_mut().push(make_newline());
                             add_to_value_set(entry_value.clone());
@@ -88,9 +89,8 @@ where
                         let mut found_string = false;
                         for child in value_node.children_with_tokens() {
                             let kind = child.kind();
-                            if kind == SyntaxKind::STRING {
-                                entry_value =
-                                    transform(load_text(child.as_token().unwrap().text(), SyntaxKind::STRING).as_str());
+                            if kind == STRING {
+                                entry_value = transform(load_text(child.as_token().unwrap().text(), STRING).as_str());
                                 found_string = true;
                                 break;
                             }
@@ -102,7 +102,7 @@ where
                         entry_set.borrow_mut().push(entry);
                         previous_is_value = true;
                     }
-                    SyntaxKind::NEWLINE => {
+                    NEWLINE => {
                         entry_set.borrow_mut().push(entry);
                         if has_value {
                             add_to_value_set(entry_value.clone());
@@ -133,7 +133,7 @@ mod tests {
     use rstest::rstest;
     use taplo::formatter::{format_syntax, Options};
     use taplo::parser::parse;
-    use taplo::syntax::SyntaxKind;
+    use taplo::syntax::SyntaxKind::{ENTRY, VALUE};
 
     use crate::helpers::array::{sort, transform};
     use crate::helpers::pep508::format_requirement;
@@ -193,9 +193,9 @@ mod tests {
     fn test_normalize_requirement(#[case] start: &str, #[case] expected: &str, #[case] keep_full_version: bool) {
         let root_ast = parse(start).into_syntax().clone_for_update();
         for children in root_ast.children_with_tokens() {
-            if children.kind() == SyntaxKind::ENTRY {
+            if children.kind() == ENTRY {
                 for entry in children.as_node().unwrap().children_with_tokens() {
-                    if entry.kind() == SyntaxKind::VALUE {
+                    if entry.kind() == VALUE {
                         transform(entry.as_node().unwrap(), &|s| format_requirement(s, keep_full_version));
                     }
                 }
@@ -275,9 +275,9 @@ mod tests {
     fn test_order_array(#[case] start: &str, #[case] expected: &str) {
         let root_ast = parse(start).into_syntax().clone_for_update();
         for children in root_ast.children_with_tokens() {
-            if children.kind() == SyntaxKind::ENTRY {
+            if children.kind() == ENTRY {
                 for entry in children.as_node().unwrap().children_with_tokens() {
-                    if entry.kind() == SyntaxKind::VALUE {
+                    if entry.kind() == VALUE {
                         sort(entry.as_node().unwrap(), str::to_lowercase);
                     }
                 }

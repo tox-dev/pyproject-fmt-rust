@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use std::iter::zip;
 use std::ops::Index;
 
-use taplo::syntax::SyntaxKind::{TABLE_ARRAY_HEADER, TABLE_HEADER};
-use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
+use taplo::syntax::SyntaxKind::{ENTRY, IDENT, KEY, NEWLINE, TABLE_ARRAY_HEADER, TABLE_HEADER, VALUE};
+use taplo::syntax::{SyntaxElement, SyntaxNode};
 use taplo::HashSet;
 
 use crate::helpers::create::{make_empty_newline, make_key, make_newline, make_table_entry};
@@ -46,11 +46,17 @@ impl Tables {
                     // join tables
                     let pos = indexes.first().unwrap();
                     let mut res = table_set.index(*pos).borrow_mut();
-                    for element in entry_set_borrow.clone() {
-                        if element.kind() != TABLE_HEADER {
-                            res.push(element);
-                        }
+                    let mut new = entry_set_borrow.clone();
+                    if let Some(last_non_trailing_newline_index) = new.iter().rposition(|x| x.kind() != NEWLINE) {
+                        new.truncate(last_non_trailing_newline_index + 1);
                     }
+                    if res.last().unwrap().kind() != NEWLINE {
+                        res.push(make_newline());
+                    }
+                    res.extend(
+                        new.into_iter()
+                            .skip_while(|x| [NEWLINE, TABLE_HEADER].contains(&x.kind())),
+                    );
                 }
                 entry_set_borrow.clear();
             }
@@ -84,12 +90,12 @@ impl Tables {
                 if !got.is_empty() {
                     entry_count += got.len();
                     let last = got.last().unwrap();
-                    if name.is_empty() && last.kind() == SyntaxKind::NEWLINE && got.len() == 1 {
+                    if name.is_empty() && last.kind() == NEWLINE && got.len() == 1 {
                         continue;
                     }
                     let mut add = got.clone();
                     if get_key(name) != get_key(next_name) {
-                        if last.kind() == SyntaxKind::NEWLINE {
+                        if last.kind() == NEWLINE {
                             // replace existing newline to ensure single newline
                             add.pop();
                         }
@@ -102,7 +108,6 @@ impl Tables {
         root_ast.splice_children(0..entry_count, to_insert);
     }
 }
-
 fn calculate_order(
     header_to_pos: &HashMap<String, Vec<usize>>,
     table_set: &[RefCell<Vec<SyntaxElement>>],
@@ -196,26 +201,38 @@ fn load_keys(table: &RefMut<Vec<SyntaxElement>>) -> (HashMap<String, usize>, Vec
         }
     };
     let mut key = String::new();
-    for c in table.iter() {
-        if c.kind() == SyntaxKind::ENTRY {
-            add_to_key_set(key.clone());
-            for e in c.as_node().unwrap().children_with_tokens() {
-                if e.kind() == SyntaxKind::KEY {
+    let mut cutoff = false;
+    for element in table.iter() {
+        let kind = element.kind();
+        if kind == ENTRY {
+            if cutoff {
+                add_to_key_set(key.clone());
+                cutoff = false;
+            }
+            for e in element.as_node().unwrap().children_with_tokens() {
+                if e.kind() == KEY {
                     key = e.as_node().unwrap().text().to_string().trim().to_string();
                     break;
                 }
             }
         }
-        entry_set.borrow_mut().push(c.clone());
+        if [ENTRY, TABLE_HEADER, TABLE_ARRAY_HEADER].contains(&kind) {
+            cutoff = true;
+        }
+        entry_set.borrow_mut().push(element.clone());
+        if cutoff && kind == NEWLINE {
+            add_to_key_set(key.clone());
+            cutoff = false;
+        }
     }
     add_to_key_set(key);
     (key_to_pos, key_set)
 }
 
 pub fn get_table_name(entry: &SyntaxElement) -> String {
-    if [SyntaxKind::TABLE_HEADER, SyntaxKind::TABLE_ARRAY_HEADER].contains(&entry.kind()) {
+    if [TABLE_HEADER, TABLE_ARRAY_HEADER].contains(&entry.kind()) {
         for child in entry.as_node().unwrap().children_with_tokens() {
-            if child.kind() == SyntaxKind::KEY {
+            if child.kind() == KEY {
                 return child.as_node().unwrap().text().to_string().trim().to_string();
             }
         }
@@ -229,11 +246,11 @@ where
 {
     let mut key = String::new();
     for table_entry in table.iter() {
-        if table_entry.kind() == SyntaxKind::ENTRY {
+        if table_entry.kind() == ENTRY {
             for entry in table_entry.as_node().unwrap().children_with_tokens() {
-                if entry.kind() == SyntaxKind::KEY {
+                if entry.kind() == KEY {
                     key = entry.as_node().unwrap().text().to_string().trim().to_string();
-                } else if entry.kind() == SyntaxKind::VALUE {
+                } else if entry.kind() == VALUE {
                     f(key.clone(), entry.as_node().unwrap());
                 }
             }
@@ -269,21 +286,21 @@ pub fn collapse_sub_tables(tables: &mut Tables, name: &str) {
         let mut header = false;
         for child in sub.iter() {
             let kind = child.kind();
-            if kind == SyntaxKind::TABLE_HEADER {
+            if kind == TABLE_HEADER {
                 header = true;
                 continue;
             }
-            if header && kind == SyntaxKind::NEWLINE {
+            if header && kind == NEWLINE {
                 continue;
             }
-            if kind == SyntaxKind::ENTRY {
+            if kind == ENTRY {
                 let mut to_insert = Vec::<SyntaxElement>::new();
                 let child_node = child.as_node().unwrap();
                 for mut entry in child_node.children_with_tokens() {
-                    if entry.kind() == SyntaxKind::KEY {
+                    if entry.kind() == KEY {
                         for array_entry_value in entry.as_node().unwrap().children_with_tokens() {
-                            if array_entry_value.kind() == SyntaxKind::IDENT {
-                                let txt = load_text(array_entry_value.as_token().unwrap().text(), SyntaxKind::IDENT);
+                            if array_entry_value.kind() == IDENT {
+                                let txt = load_text(array_entry_value.as_token().unwrap().text(), IDENT);
                                 entry = make_key(format!("{sub_name}.{txt}").as_str());
                                 break;
                             }
@@ -293,7 +310,7 @@ pub fn collapse_sub_tables(tables: &mut Tables, name: &str) {
                 }
                 child_node.splice_children(0..to_insert.len(), to_insert);
             }
-            if main.last().unwrap().kind() != SyntaxKind::NEWLINE {
+            if main.last().unwrap().kind() != NEWLINE {
                 main.push(make_newline());
             }
             main.push(child.clone());
