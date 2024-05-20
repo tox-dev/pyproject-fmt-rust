@@ -1,12 +1,13 @@
+use taplo::syntax::SyntaxKind::{IDENT, MULTI_LINE_STRING, MULTI_LINE_STRING_LITERAL, STRING, STRING_LITERAL};
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 
 use crate::helpers::create::make_string_node;
 
 pub fn load_text(value: &str, kind: SyntaxKind) -> String {
     let mut chars = value.chars();
-    let offset = if [SyntaxKind::STRING, SyntaxKind::STRING_LITERAL].contains(&kind) {
+    let offset = if [STRING, STRING_LITERAL].contains(&kind) {
         1
-    } else if kind == SyntaxKind::IDENT {
+    } else if kind == IDENT {
         0
     } else {
         3
@@ -18,7 +19,7 @@ pub fn load_text(value: &str, kind: SyntaxKind) -> String {
         chars.next_back();
     }
     let mut res = chars.as_str().to_string();
-    if kind == SyntaxKind::STRING {
+    if kind == STRING {
         res = res.replace("\\\"", "\"");
     }
     res
@@ -33,18 +34,11 @@ where
     for mut child in entry.children_with_tokens() {
         count += 1;
         let kind = child.kind();
-        if [
-            SyntaxKind::STRING,
-            SyntaxKind::STRING_LITERAL,
-            SyntaxKind::MULTI_LINE_STRING,
-            SyntaxKind::MULTI_LINE_STRING_LITERAL,
-        ]
-        .contains(&kind)
-        {
+        if [STRING, STRING_LITERAL, MULTI_LINE_STRING, MULTI_LINE_STRING_LITERAL].contains(&kind) {
             let found_str_value = load_text(child.as_token().unwrap().text(), kind);
             let output = transform(found_str_value.as_str());
 
-            changed = output != found_str_value || kind != SyntaxKind::STRING;
+            changed = output != found_str_value || kind != STRING;
             if changed {
                 child = make_string_node(output.as_str());
             }

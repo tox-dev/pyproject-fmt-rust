@@ -1,5 +1,6 @@
 use taplo::parser::parse;
-use taplo::syntax::{SyntaxElement, SyntaxKind};
+use taplo::syntax::SyntaxElement;
+use taplo::syntax::SyntaxKind::{ARRAY, COMMA, ENTRY, KEY, NEWLINE, STRING, VALUE};
 
 pub fn make_string_node(text: &str) -> SyntaxElement {
     let expr = &format!("a = \"{}\"", text.replace('"', "\\\""));
@@ -10,9 +11,9 @@ pub fn make_string_node(text: &str) -> SyntaxElement {
         .unwrap()
         .children_with_tokens()
     {
-        if root.kind() == SyntaxKind::VALUE {
+        if root.kind() == VALUE {
             for entries in root.as_node().unwrap().children_with_tokens() {
-                if entries.kind() == SyntaxKind::STRING {
+                if entries.kind() == STRING {
                     return entries;
                 }
             }
@@ -23,7 +24,7 @@ pub fn make_string_node(text: &str) -> SyntaxElement {
 
 pub fn make_empty_newline() -> SyntaxElement {
     for root in parse("\n\n").into_syntax().clone_for_update().children_with_tokens() {
-        if root.kind() == SyntaxKind::NEWLINE {
+        if root.kind() == NEWLINE {
             return root;
         }
     }
@@ -32,7 +33,7 @@ pub fn make_empty_newline() -> SyntaxElement {
 
 pub fn make_newline() -> SyntaxElement {
     for root in parse("\n").into_syntax().clone_for_update().children_with_tokens() {
-        if root.kind() == SyntaxKind::NEWLINE {
+        if root.kind() == NEWLINE {
             return root;
         }
     }
@@ -41,13 +42,13 @@ pub fn make_newline() -> SyntaxElement {
 
 pub fn make_comma() -> SyntaxElement {
     for root in parse("a=[1,2]").into_syntax().clone_for_update().children_with_tokens() {
-        if root.kind() == SyntaxKind::ENTRY {
+        if root.kind() == ENTRY {
             for value in root.as_node().unwrap().children_with_tokens() {
-                if value.kind() == SyntaxKind::VALUE {
+                if value.kind() == VALUE {
                     for array in value.as_node().unwrap().children_with_tokens() {
-                        if array.kind() == SyntaxKind::ARRAY {
+                        if array.kind() == ARRAY {
                             for e in array.as_node().unwrap().children_with_tokens() {
-                                if e.kind() == SyntaxKind::COMMA {
+                                if e.kind() == COMMA {
                                     return e;
                                 }
                             }
@@ -66,9 +67,9 @@ pub fn make_key(text: &str) -> SyntaxElement {
         .clone_for_update()
         .children_with_tokens()
     {
-        if root.kind() == SyntaxKind::ENTRY {
+        if root.kind() == ENTRY {
             for value in root.as_node().unwrap().children_with_tokens() {
-                if value.kind() == SyntaxKind::KEY {
+                if value.kind() == KEY {
                     return value;
                 }
             }
@@ -84,7 +85,7 @@ pub fn make_array(key: &str) -> SyntaxElement {
         .clone_for_update()
         .children_with_tokens()
     {
-        if root.kind() == SyntaxKind::ENTRY {
+        if root.kind() == ENTRY {
             return root;
         }
     }
@@ -98,13 +99,13 @@ pub fn make_array_entry(key: &str) -> SyntaxElement {
         .clone_for_update()
         .children_with_tokens()
     {
-        if root.kind() == SyntaxKind::ENTRY {
+        if root.kind() == ENTRY {
             for value in root.as_node().unwrap().children_with_tokens() {
-                if value.kind() == SyntaxKind::VALUE {
+                if value.kind() == VALUE {
                     for array in value.as_node().unwrap().children_with_tokens() {
-                        if array.kind() == SyntaxKind::ARRAY {
+                        if array.kind() == ARRAY {
                             for e in array.as_node().unwrap().children_with_tokens() {
-                                if e.kind() == SyntaxKind::VALUE {
+                                if e.kind() == VALUE {
                                     return e;
                                 }
                             }
@@ -124,7 +125,7 @@ pub fn make_entry_of_string(key: &String, value: &String) -> SyntaxElement {
         .clone_for_update()
         .children_with_tokens()
     {
-        if root.kind() == SyntaxKind::ENTRY {
+        if root.kind() == ENTRY {
             return root;
         }
     }
