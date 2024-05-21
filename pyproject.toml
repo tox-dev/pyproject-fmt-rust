@@ -64,10 +64,19 @@ target-version = "py38"
 line-length = 120
 format.preview = true
 format.docstring-code-line-length = 100
-
 format.docstring-code-format = true
 lint.select = [
   "ALL",
+]
+lint.ignore = [
+  "ANN101", # no type annotation for self
+  "ANN401", # allow Any as type annotation
+  "COM812", # Conflict with formatter
+  "CPY",    # No copyright statements
+  "D203",   # `one-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible
+  "D212",   # `multi-line-summary-first-line` (D212) and `multi-line-summary-second-line` (D213) are incompatible
+  "ISC001", # Conflict with formatter
+  "S104",   # Possible binding to all interface
 ]
 lint.per-file-ignores."tests/**/*.py" = [
   "D",       # don"t care about documentation in tests
@@ -85,16 +94,6 @@ lint.isort = { known-first-party = [
 ], required-imports = [
   "from __future__ import annotations",
 ] }
-lint.ignore = [
-  "ANN101", # no type annotation for self
-  "ANN401", # allow Any as type annotation
-  "COM812", # Conflict with formatter
-  "CPY",    # No copyright statements
-  "D203",   # `one-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible
-  "D212",   # `multi-line-summary-first-line` (D212) and `multi-line-summary-second-line` (D213) are incompatible
-  "ISC001", # Conflict with formatter
-  "S104",   # Possible binding to all interface
-]
 lint.preview = true
 
 [tool.codespell]

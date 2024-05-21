@@ -77,7 +77,6 @@ impl Tables {
 
     pub fn reorder(&mut self, root_ast: &SyntaxNode, order: &[&str]) {
         let mut to_insert = Vec::<SyntaxElement>::new();
-        let mut entry_count: usize = 0;
         let order = calculate_order(&self.header_to_pos, &self.table_set, order);
         let mut next = order.clone();
         if !next.is_empty() {
@@ -88,7 +87,6 @@ impl Tables {
             for entries in self.get(name).unwrap() {
                 let got = entries.borrow_mut();
                 if !got.is_empty() {
-                    entry_count += got.len();
                     let last = got.last().unwrap();
                     if name.is_empty() && last.kind() == NEWLINE && got.len() == 1 {
                         continue;
@@ -105,7 +103,7 @@ impl Tables {
                 }
             }
         }
-        root_ast.splice_children(0..entry_count, to_insert);
+        root_ast.splice_children(0..root_ast.children_with_tokens().count(), to_insert);
     }
 }
 fn calculate_order(
