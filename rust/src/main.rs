@@ -100,8 +100,11 @@ pub fn _lib(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
 #[cfg(test)]
 mod tests {
+    use std::fs::read_to_string;
+    use std::path::{Path, PathBuf};
+
     use indoc::indoc;
-    use rstest::rstest;
+    use rstest::{fixture, rstest};
 
     use crate::{format_toml, Settings};
 
@@ -284,6 +287,31 @@ mod tests {
             min_supported_python: (3, 8),
         };
         let got = format_toml(start, &settings);
+        assert_eq!(got, expected);
+        let second = format_toml(got.as_str(), &settings);
+        assert_eq!(second, got);
+    }
+
+    #[fixture]
+    fn data() -> PathBuf {
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("rust")
+            .join("src")
+            .join("data")
+    }
+
+    #[rstest]
+    fn test_issue_24(data: PathBuf) {
+        let start = read_to_string(data.join("ruff-order.start.toml")).unwrap();
+        let settings = Settings {
+            column_width: 1,
+            indent: 2,
+            keep_full_version: false,
+            max_supported_python: (3, 8),
+            min_supported_python: (3, 8),
+        };
+        let got = format_toml(start.as_str(), &settings);
+        let expected = read_to_string(data.join("ruff-order.expected.toml")).unwrap();
         assert_eq!(got, expected);
         let second = format_toml(got.as_str(), &settings);
         assert_eq!(second, got);
