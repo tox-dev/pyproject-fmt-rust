@@ -23,6 +23,7 @@ where
     }
 }
 
+#[allow(clippy::range_plus_one, clippy::too_many_lines)]
 pub fn sort<F>(node: &SyntaxNode, transform: F)
 where
     F: Fn(&str) -> String,
@@ -30,6 +31,12 @@ where
     for array in node.children_with_tokens() {
         if array.kind() == ARRAY {
             let array_node = array.as_node().unwrap();
+            let has_trailing_comma = array_node
+                .children_with_tokens()
+                .map(|x| x.kind())
+                .filter(|x| *x == COMMA || *x == VALUE)
+                .last()
+                == Some(COMMA);
             let mut value_set: Vec<
                 Vec<
                     taplo::rowan::NodeOrToken<
@@ -99,6 +106,7 @@ where
                             return;
                         }
                         entry_set.borrow_mut().push(entry);
+                        entry_set.borrow_mut().push(make_comma());
                     }
                     NEWLINE => {
                         entry_set.borrow_mut().push(entry);
@@ -107,6 +115,7 @@ where
                             has_value = false;
                         }
                     }
+                    COMMA => {}
                     _ => {
                         entry_set.borrow_mut().push(entry);
                     }
@@ -121,6 +130,16 @@ where
             }
             entries.extend(end);
             array_node.splice_children(0..count, entries);
+            if !has_trailing_comma {
+                if let Some((i, _)) = array_node
+                    .children_with_tokens()
+                    .enumerate()
+                    .filter(|(_, x)| x.kind() == COMMA)
+                    .last()
+                {
+                    array_node.splice_children(i..i + 1, vec![]);
+                }
+            }
         }
     }
 }
@@ -130,6 +149,9 @@ pub fn add_trailing_comma(node: &SyntaxNode) {
     for array in node.children_with_tokens() {
         if array.kind() == ARRAY {
             let array_node = array.as_node().unwrap();
+            for entry in array_node.children_with_tokens() {
+                println!("{:?}, {}", entry.kind(), entry);
+            }
             for (i, entry) in array_node.children_with_tokens().enumerate() {
                 if entry.kind() == VALUE {
                     array_node.splice_children(i + 1..i + 1, vec![make_comma()]);
@@ -304,6 +326,27 @@ mod tests {
             ..Options::default()
         };
         let res = format_syntax(root_ast, opt);
+        assert_eq!(res, expected);
+    }
+
+    #[rstest]
+    #[case::reorder_no_trailing_comma(
+        indoc ! {r#"a=["B","A"]"#},
+        indoc ! {r#"a=["A","B"]"#}
+    )]
+    fn test_reorder_no_trailing_comma(#[case] start: &str, #[case] expected: &str) {
+        let root_ast = parse(start).into_syntax().clone_for_update();
+        for children in root_ast.children_with_tokens() {
+            if children.kind() == ENTRY {
+                for entry in children.as_node().unwrap().children_with_tokens() {
+                    if entry.kind() == VALUE {
+                        sort(entry.as_node().unwrap(), str::to_lowercase);
+                    }
+                }
+            }
+        }
+        let mut res = root_ast.to_string();
+        res.retain(|x| !x.is_whitespace());
         assert_eq!(res, expected);
     }
 
