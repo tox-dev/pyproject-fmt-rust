@@ -2,10 +2,10 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 use lexical_sort::{natural_lexical_cmp, StringSort};
-use taplo::syntax::SyntaxKind::{ARRAY, NEWLINE, STRING, VALUE, WHITESPACE};
+use taplo::syntax::SyntaxKind::{ARRAY, COMMA, NEWLINE, STRING, VALUE, WHITESPACE};
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 
-use crate::helpers::create::{make_newline};
+use crate::helpers::create::{make_comma, make_newline};
 use crate::helpers::string::{load_text, update_content};
 
 pub fn transform<F>(node: &SyntaxNode, transform: &F)
@@ -30,7 +30,14 @@ where
     for array in node.children_with_tokens() {
         if array.kind() == ARRAY {
             let array_node = array.as_node().unwrap();
-            let mut value_set = Vec::<Vec<SyntaxElement>>::new();
+            let mut value_set: Vec<
+                Vec<
+                    taplo::rowan::NodeOrToken<
+                        taplo::rowan::SyntaxNode<taplo::syntax::Lang>,
+                        taplo::rowan::SyntaxToken<taplo::syntax::Lang>,
+                    >,
+                >,
+            > = Vec::<Vec<SyntaxElement>>::new();
             let entry_set = RefCell::new(Vec::<SyntaxElement>::new());
             let mut key_to_pos = HashMap::<String, usize>::new();
 
@@ -118,6 +125,23 @@ where
     }
 }
 
+#[allow(clippy::range_plus_one)]
+pub fn add_trailing_comma(node: &SyntaxNode) {
+    for array in node.children_with_tokens() {
+        if array.kind() == ARRAY {
+            let array_node = array.as_node().unwrap();
+            for (i, entry) in array_node.children_with_tokens().enumerate() {
+                if entry.kind() == VALUE {
+                    array_node.splice_children(i + 1..i + 1, vec![make_comma()]);
+                }
+                if entry.kind() == COMMA {
+                    array_node.splice_children(i..i + 1, vec![]);
+                }
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
@@ -126,7 +150,7 @@ mod tests {
     use taplo::parser::parse;
     use taplo::syntax::SyntaxKind::{ENTRY, VALUE};
 
-    use crate::helpers::array::{sort, transform};
+    use crate::helpers::array::{add_trailing_comma, sort, transform};
     use crate::helpers::pep508::format_requirement;
 
     #[rstest]
@@ -280,6 +304,54 @@ mod tests {
             ..Options::default()
         };
         let res = format_syntax(root_ast, opt);
+        assert_eq!(res, expected);
+    }
+
+    #[rstest]
+    #[case::empty(
+        indoc ! {r"
+    a = []
+    "},
+        indoc ! {r"
+    a = []
+    "}
+    )]
+    #[case::no_trailing_comma(
+        indoc ! {r#"
+    a = ["A", "B"]
+    "#},
+        indoc ! {r#"
+    a = ["A", "B",]
+    "#}
+    )]
+    #[case::trailing_comma(
+        indoc ! {r#"
+    a = ["A", "B",]
+    "#},
+        indoc ! {r#"
+    a = ["A", "B",]
+    "#}
+    )]
+    #[case::spaces(
+        indoc ! {r#"
+    a = [ "A" , "B" ]
+    "#},
+        indoc ! {r#"
+    a = [ "A" , "B" ,]
+    "#}
+    )]
+    fn test_add_trailing_comma(#[case] start: &str, #[case] expected: &str) {
+        let root_ast = parse(start).into_syntax().clone_for_update();
+        for children in root_ast.children_with_tokens() {
+            if children.kind() == ENTRY {
+                for entry in children.as_node().unwrap().children_with_tokens() {
+                    if entry.kind() == VALUE {
+                        add_trailing_comma(entry.as_node().unwrap());
+                    }
+                }
+            }
+        }
+        let res = root_ast.to_string();
         assert_eq!(res, expected);
     }
 }

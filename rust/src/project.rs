@@ -8,7 +8,7 @@ use taplo::syntax::{SyntaxElement, SyntaxNode};
 use taplo::util::StrExt;
 use taplo::HashSet;
 
-use crate::helpers::array::{sort, transform};
+use crate::helpers::array::{add_trailing_comma, sort, transform};
 use crate::helpers::create::{make_array, make_array_entry, make_comma, make_entry_of_string, make_newline};
 use crate::helpers::pep508::{format_requirement, get_canonic_requirement_name};
 use crate::helpers::string::{load_text, update_content};
@@ -64,6 +64,7 @@ pub fn fix(
         "classifiers" => {
             transform(entry, &|s| String::from(s));
             sort(entry, str::to_lowercase);
+            add_trailing_comma(entry);
         }
         _ => {}
     });
