@@ -295,7 +295,7 @@ mod tests {
             }
         }
         let opt = Options {
-            column_width: 80,
+            column_width: 120,
             ..Options::default()
         };
         let res = format_syntax(root_ast, opt);
