@@ -144,26 +144,6 @@ where
     }
 }
 
-#[allow(clippy::range_plus_one)]
-pub fn add_trailing_comma(node: &SyntaxNode) {
-    for array in node.children_with_tokens() {
-        if array.kind() == ARRAY {
-            let array_node = array.as_node().unwrap();
-            for entry in array_node.children_with_tokens() {
-                println!("{:?}, {}", entry.kind(), entry);
-            }
-            for (i, entry) in array_node.children_with_tokens().enumerate() {
-                if entry.kind() == VALUE {
-                    array_node.splice_children(i + 1..i + 1, vec![make_comma()]);
-                }
-                if entry.kind() == COMMA {
-                    array_node.splice_children(i..i + 1, vec![]);
-                }
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
@@ -172,7 +152,7 @@ mod tests {
     use taplo::parser::parse;
     use taplo::syntax::SyntaxKind::{ENTRY, VALUE};
 
-    use crate::helpers::array::{add_trailing_comma, sort, transform};
+    use crate::helpers::array::{sort, transform};
     use crate::helpers::pep508::format_requirement;
 
     #[rstest]
@@ -347,54 +327,6 @@ mod tests {
         }
         let mut res = root_ast.to_string();
         res.retain(|x| !x.is_whitespace());
-        assert_eq!(res, expected);
-    }
-
-    #[rstest]
-    #[case::empty(
-        indoc ! {r"
-    a = []
-    "},
-        indoc ! {r"
-    a = []
-    "}
-    )]
-    #[case::no_trailing_comma(
-        indoc ! {r#"
-    a = ["A", "B"]
-    "#},
-        indoc ! {r#"
-    a = ["A", "B",]
-    "#}
-    )]
-    #[case::trailing_comma(
-        indoc ! {r#"
-    a = ["A", "B",]
-    "#},
-        indoc ! {r#"
-    a = ["A", "B",]
-    "#}
-    )]
-    #[case::spaces(
-        indoc ! {r#"
-    a = [ "A" , "B" ]
-    "#},
-        indoc ! {r#"
-    a = [ "A" , "B" ,]
-    "#}
-    )]
-    fn test_add_trailing_comma(#[case] start: &str, #[case] expected: &str) {
-        let root_ast = parse(start).into_syntax().clone_for_update();
-        for children in root_ast.children_with_tokens() {
-            if children.kind() == ENTRY {
-                for entry in children.as_node().unwrap().children_with_tokens() {
-                    if entry.kind() == VALUE {
-                        add_trailing_comma(entry.as_node().unwrap());
-                    }
-                }
-            }
-        }
-        let res = root_ast.to_string();
         assert_eq!(res, expected);
     }
 }
