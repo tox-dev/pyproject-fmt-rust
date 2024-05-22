@@ -37,14 +37,7 @@ where
                 .filter(|x| *x == COMMA || *x == VALUE)
                 .last()
                 == Some(COMMA);
-            let mut value_set: Vec<
-                Vec<
-                    taplo::rowan::NodeOrToken<
-                        taplo::rowan::SyntaxNode<taplo::syntax::Lang>,
-                        taplo::rowan::SyntaxToken<taplo::syntax::Lang>,
-                    >,
-                >,
-            > = Vec::<Vec<SyntaxElement>>::new();
+            let mut value_set = Vec::<Vec<SyntaxElement>>::new();
             let entry_set = RefCell::new(Vec::<SyntaxElement>::new());
             let mut key_to_pos = HashMap::<String, usize>::new();
 
