@@ -2,10 +2,10 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 use lexical_sort::{natural_lexical_cmp, StringSort};
-use taplo::syntax::SyntaxKind::{ARRAY, COMMA, NEWLINE, STRING, VALUE, WHITESPACE};
+use taplo::syntax::SyntaxKind::{ARRAY, NEWLINE, STRING, VALUE, WHITESPACE};
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 
-use crate::helpers::create::{make_comma, make_newline};
+use crate::helpers::create::{make_newline};
 use crate::helpers::string::{load_text, update_content};
 
 pub fn transform<F>(node: &SyntaxNode, transform: &F)
@@ -44,20 +44,12 @@ where
             };
             let mut entries = Vec::<SyntaxElement>::new();
             let mut has_value = false;
-            let mut previous_is_value = false;
             let mut previous_is_bracket_open = false;
             let mut entry_value = String::new();
             let mut count = 0;
 
             for entry in array_node.children_with_tokens() {
                 count += 1;
-                if previous_is_value {
-                    // make sure ends with trailing comma
-                    previous_is_value = false;
-                    if entry.kind() != COMMA {
-                        entry_set.borrow_mut().push(make_comma());
-                    }
-                }
                 if previous_is_bracket_open {
                     // make sure ends with trailing comma
                     if entry.kind() == NEWLINE || entry.kind() == WHITESPACE {
@@ -100,7 +92,6 @@ where
                             return;
                         }
                         entry_set.borrow_mut().push(entry);
-                        previous_is_value = true;
                     }
                     NEWLINE => {
                         entry_set.borrow_mut().push(entry);
@@ -211,8 +202,7 @@ mod tests {
     a = []
     "},
         indoc ! {r"
-    a = [
-    ]
+    a = []
     "}
     )]
     #[case::single(
@@ -220,21 +210,15 @@ mod tests {
     a = ["A"]
     "#},
         indoc ! {r#"
-    a = [
-      "A",
-    ]
+    a = ["A"]
     "#}
     )]
     #[case::newline_single(
         indoc ! {r#"
-    a = [
-      "A"
-    ]
+    a = ["A"]
     "#},
         indoc ! {r#"
-    a = [
-      "A",
-    ]
+    a = ["A"]
     "#}
     )]
     #[case::newline_single_comment(
@@ -248,6 +232,14 @@ mod tests {
       # comment
       "A",
     ]
+    "#}
+    )]
+    #[case::double(
+        indoc ! {r#"
+    a = ["A", "B"]
+    "#},
+        indoc ! {r#"
+    a = ["A", "B"]
     "#}
     )]
     #[case::increasing(
@@ -284,7 +276,7 @@ mod tests {
             }
         }
         let opt = Options {
-            column_width: 1,
+            column_width: 80,
             ..Options::default()
         };
         let res = format_syntax(root_ast, opt);
