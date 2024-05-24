@@ -242,9 +242,8 @@ pub fn for_entries<F>(table: &[SyntaxElement], f: &mut F)
 where
     F: FnMut(String, &SyntaxNode),
 {
-    let size = active_table_size(table);
     let mut key = String::new();
-    for table_entry in table.iter().take(size) {
+    for table_entry in table {
         if table_entry.kind() == ENTRY {
             for entry in table_entry.as_node().unwrap().children_with_tokens() {
                 if entry.kind() == KEY {
