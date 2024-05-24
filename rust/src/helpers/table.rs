@@ -186,7 +186,7 @@ pub fn reorder_table_keys(table: &mut RefMut<Vec<SyntaxElement>>, order: &[&str]
     table.splice(0..size, to_insert);
 }
 
-fn load_keys(table: &RefMut<Vec<SyntaxElement>>) -> (HashMap<String, usize>, Vec<Vec<SyntaxElement>>) {
+fn load_keys(table: &[SyntaxElement]) -> (HashMap<String, usize>, Vec<Vec<SyntaxElement>>) {
     let mut key_to_pos = HashMap::<String, usize>::new();
     let mut key_set = Vec::<Vec<SyntaxElement>>::new();
     let entry_set = RefCell::new(Vec::<SyntaxElement>::new());
@@ -200,7 +200,7 @@ fn load_keys(table: &RefMut<Vec<SyntaxElement>>) -> (HashMap<String, usize>, Vec
     };
     let mut key = String::new();
     let mut cutoff = false;
-    for element in table.iter() {
+    for element in table {
         let kind = element.kind();
         if kind == ENTRY {
             if cutoff {
@@ -238,12 +238,12 @@ pub fn get_table_name(entry: &SyntaxElement) -> String {
     String::new()
 }
 
-pub fn for_entries<F>(table: &RefMut<Vec<SyntaxElement>>, f: &mut F)
+pub fn for_entries<F>(table: &[SyntaxElement], f: &mut F)
 where
     F: FnMut(String, &SyntaxNode),
 {
     let mut key = String::new();
-    for table_entry in table.iter() {
+    for table_entry in table {
         if table_entry.kind() == ENTRY {
             for entry in table_entry.as_node().unwrap().children_with_tokens() {
                 if entry.kind() == KEY {
