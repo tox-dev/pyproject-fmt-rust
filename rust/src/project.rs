@@ -21,7 +21,7 @@ pub fn fix(
     min_supported_python: (u8, u8),
 ) {
     collapse_sub_tables(tables, "project");
-    let table_element = tables.get(&String::from("project"));
+    let table_element = tables.get("project");
     if table_element.is_none() {
         return;
     }
@@ -291,7 +291,7 @@ fn generate_classifiers_to_entry(
 type MaxMinPythonWithClassifier = ((u8, u8), (u8, u8), Vec<u8>, Option<HashSet<String>>);
 
 fn get_python_requires_with_classifier(
-    table: &RefMut<Vec<SyntaxElement>>,
+    table: &[SyntaxElement],
     max_supported_python: (u8, u8),
     min_supported_python: (u8, u8),
 ) -> MaxMinPythonWithClassifier {

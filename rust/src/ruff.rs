@@ -5,7 +5,7 @@ use crate::helpers::table::{collapse_sub_tables, for_entries, reorder_table_keys
 #[allow(clippy::too_many_lines)]
 pub fn fix(tables: &mut Tables) {
     collapse_sub_tables(tables, "tool.ruff");
-    let table_element = tables.get(&String::from("tool.ruff"));
+    let table_element = tables.get("tool.ruff");
     if table_element.is_none() {
         return;
     }

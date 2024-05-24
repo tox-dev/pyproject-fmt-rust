@@ -3,7 +3,7 @@ use crate::helpers::pep508::{format_requirement, get_canonic_requirement_name};
 use crate::helpers::table::{for_entries, reorder_table_keys, Tables};
 
 pub fn fix(tables: &mut Tables, keep_full_version: bool) {
-    let table_element = tables.get(&String::from("build-system"));
+    let table_element = tables.get("build-system");
     if table_element.is_none() {
         return;
     }
