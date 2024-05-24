@@ -272,6 +272,29 @@ mod tests {
         true,
         (3, 8)
     )]
+    #[case::space_issue_27(
+        indoc ! {r#"
+    [build-system]
+    requires = [
+      "hatchling",
+    ]
+    build-backend = "hatchling.build"
+
+    [project]
+    "#},
+        indoc ! {r#"
+    [build-system]
+    build-backend = "hatchling.build"
+    requires = [
+      "hatchling",
+    ]
+
+    [project]
+    "#},
+        2,
+        true,
+        (3, 8)
+    )]
     fn test_format_toml(
         #[case] start: &str,
         #[case] expected: &str,
