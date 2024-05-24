@@ -23,6 +23,7 @@ where
     }
 }
 
+#[allow(clippy::range_plus_one, clippy::too_many_lines)]
 pub fn sort<F>(node: &SyntaxNode, transform: F)
 where
     F: Fn(&str) -> String,
@@ -30,6 +31,12 @@ where
     for array in node.children_with_tokens() {
         if array.kind() == ARRAY {
             let array_node = array.as_node().unwrap();
+            let has_trailing_comma = array_node
+                .children_with_tokens()
+                .map(|x| x.kind())
+                .filter(|x| *x == COMMA || *x == VALUE)
+                .last()
+                == Some(COMMA);
             let mut value_set = Vec::<Vec<SyntaxElement>>::new();
             let entry_set = RefCell::new(Vec::<SyntaxElement>::new());
             let mut key_to_pos = HashMap::<String, usize>::new();
@@ -44,20 +51,12 @@ where
             };
             let mut entries = Vec::<SyntaxElement>::new();
             let mut has_value = false;
-            let mut previous_is_value = false;
             let mut previous_is_bracket_open = false;
             let mut entry_value = String::new();
             let mut count = 0;
 
             for entry in array_node.children_with_tokens() {
                 count += 1;
-                if previous_is_value {
-                    // make sure ends with trailing comma
-                    previous_is_value = false;
-                    if entry.kind() != COMMA {
-                        entry_set.borrow_mut().push(make_comma());
-                    }
-                }
                 if previous_is_bracket_open {
                     // make sure ends with trailing comma
                     if entry.kind() == NEWLINE || entry.kind() == WHITESPACE {
@@ -100,7 +99,7 @@ where
                             return;
                         }
                         entry_set.borrow_mut().push(entry);
-                        previous_is_value = true;
+                        entry_set.borrow_mut().push(make_comma());
                     }
                     NEWLINE => {
                         entry_set.borrow_mut().push(entry);
@@ -109,6 +108,7 @@ where
                             has_value = false;
                         }
                     }
+                    COMMA => {}
                     _ => {
                         entry_set.borrow_mut().push(entry);
                     }
@@ -123,6 +123,16 @@ where
             }
             entries.extend(end);
             array_node.splice_children(0..count, entries);
+            if !has_trailing_comma {
+                if let Some((i, _)) = array_node
+                    .children_with_tokens()
+                    .enumerate()
+                    .filter(|(_, x)| x.kind() == COMMA)
+                    .last()
+                {
+                    array_node.splice_children(i..i + 1, vec![]);
+                }
+            }
         }
     }
 }
@@ -211,8 +221,7 @@ mod tests {
     a = []
     "},
         indoc ! {r"
-    a = [
-    ]
+    a = []
     "}
     )]
     #[case::single(
@@ -220,21 +229,15 @@ mod tests {
     a = ["A"]
     "#},
         indoc ! {r#"
-    a = [
-      "A",
-    ]
+    a = ["A"]
     "#}
     )]
     #[case::newline_single(
         indoc ! {r#"
-    a = [
-      "A"
-    ]
+    a = ["A"]
     "#},
         indoc ! {r#"
-    a = [
-      "A",
-    ]
+    a = ["A"]
     "#}
     )]
     #[case::newline_single_comment(
@@ -248,6 +251,14 @@ mod tests {
       # comment
       "A",
     ]
+    "#}
+    )]
+    #[case::double(
+        indoc ! {r#"
+    a = ["A", "B"]
+    "#},
+        indoc ! {r#"
+    a = ["A", "B"]
     "#}
     )]
     #[case::increasing(
@@ -284,10 +295,31 @@ mod tests {
             }
         }
         let opt = Options {
-            column_width: 1,
+            column_width: 120,
             ..Options::default()
         };
         let res = format_syntax(root_ast, opt);
+        assert_eq!(res, expected);
+    }
+
+    #[rstest]
+    #[case::reorder_no_trailing_comma(
+        indoc ! {r#"a=["B","A"]"#},
+        indoc ! {r#"a=["A","B"]"#}
+    )]
+    fn test_reorder_no_trailing_comma(#[case] start: &str, #[case] expected: &str) {
+        let root_ast = parse(start).into_syntax().clone_for_update();
+        for children in root_ast.children_with_tokens() {
+            if children.kind() == ENTRY {
+                for entry in children.as_node().unwrap().children_with_tokens() {
+                    if entry.kind() == VALUE {
+                        sort(entry.as_node().unwrap(), str::to_lowercase);
+                    }
+                }
+            }
+        }
+        let mut res = root_ast.to_string();
+        res.retain(|x| !x.is_whitespace());
         assert_eq!(res, expected);
     }
 }
