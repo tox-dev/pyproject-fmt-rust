@@ -110,6 +110,25 @@ mod tests {
     "#},
         false
     )]
+    #[case::reorder(
+        indoc ! {r#"
+    [build-system]
+    requires = [
+      "hatchling",
+    ]
+    build-backend = "hatchling.build"
+
+    "#},
+        indoc ! {r#"
+    [build-system]
+    build-backend = "hatchling.build"
+    requires = [
+      "hatchling",
+    ]
+
+    "#},
+        false
+    )]
     fn test_format_build_systems(#[case] start: &str, #[case] expected: &str, #[case] keep_full_version: bool) {
         assert_eq!(evaluate(start, keep_full_version), expected);
     }

@@ -7,6 +7,12 @@ from pyproject_fmt_rust import Settings, format_toml
 
 def test_format_toml() -> None:
     txt = """
+    [build-system]
+    requires = [
+        "hatchling",
+    ]
+    build-backend = "hatchling.build"
+
     [project]
     keywords = [
       "A",
@@ -32,6 +38,12 @@ def test_format_toml() -> None:
     res = format_toml(dedent(txt), settings)
 
     expected = """\
+    [build-system]
+    build-backend = "hatchling.build"
+    requires = [
+        "hatchling",
+    ]
+
     [project]
     keywords = [
         "A",
