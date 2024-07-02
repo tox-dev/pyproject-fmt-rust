@@ -55,7 +55,7 @@ pub fn fix(
         }
         "dependencies" | "optional-dependencies" => {
             transform(entry, &|s| format_requirement(s, keep_full_version));
-            sort(entry, |e| get_canonic_requirement_name(e).to_lowercase());
+            sort(entry, |e| get_canonic_requirement_name(e).to_lowercase() + " " + &format_requirement(e, keep_full_version));
         }
         "dynamic" | "keywords" => {
             transform(entry, &|s| String::from(s));
