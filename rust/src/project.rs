@@ -735,6 +735,7 @@ mod tests {
     ]
     dependencies = [
       "appdirs",
+      "pyperclip; platform_system=='Darwin'",
       "pyperclip; platform_system=='Windows'",
     ]
     "#},
