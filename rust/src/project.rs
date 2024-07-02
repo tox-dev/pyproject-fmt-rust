@@ -716,6 +716,31 @@ mod tests {
         true,
         (3, 12),
     )]
+    #[case::project_platform_dependencies(
+        indoc ! {r#"
+    [project]
+    dependencies = [
+        'pyperclip; platform_system == "Darwin"',
+        'pyperclip; platform_system == "Windows"',
+        "appdirs"
+    ]
+    requires-python = "==3.12"
+    "#},
+        indoc ! {r#"
+    [project]
+    requires-python = "==3.12"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.12",
+    ]
+    dependencies = [
+      "appdirs",
+      "pyperclip; platform_system=='Windows'",
+    ]
+    "#},
+        true,
+        (3, 12),
+    )]
     #[case::project_opt_inline_dependencies(
         indoc ! {r#"
     [project]
