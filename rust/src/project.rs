@@ -55,7 +55,7 @@ pub fn fix(
         }
         "dependencies" | "optional-dependencies" => {
             transform(entry, &|s| format_requirement(s, keep_full_version));
-            sort(entry, |e| get_canonic_requirement_name(e).to_lowercase());
+            sort(entry, |e| get_canonic_requirement_name(e).to_lowercase() + " " + &format_requirement(e, keep_full_version));
         }
         "dynamic" | "keywords" => {
             transform(entry, &|s| String::from(s));
@@ -711,6 +711,32 @@ mod tests {
     dependencies = [
       "appdirs",
       "packaging>=20.0; python_version>'3.4'",
+    ]
+    "#},
+        true,
+        (3, 12),
+    )]
+    #[case::project_platform_dependencies(
+        indoc ! {r#"
+    [project]
+    dependencies = [
+        'pyperclip; platform_system == "Darwin"',
+        'pyperclip; platform_system == "Windows"',
+        "appdirs"
+    ]
+    requires-python = "==3.12"
+    "#},
+        indoc ! {r#"
+    [project]
+    requires-python = "==3.12"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.12",
+    ]
+    dependencies = [
+      "appdirs",
+      "pyperclip; platform_system=='Darwin'",
+      "pyperclip; platform_system=='Windows'",
     ]
     "#},
         true,
