@@ -71,6 +71,7 @@ pub fn reorder_tables(root_ast: &SyntaxNode<Lang>, tables: &mut Tables) {
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
     use taplo::formatter::{format_syntax, Options};
     use taplo::parser::parse;

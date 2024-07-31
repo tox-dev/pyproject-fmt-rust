@@ -8,15 +8,11 @@ from pyproject_fmt_rust import Settings, format_toml
 def test_format_toml() -> None:
     txt = """
     [project]
-    keywords = [
-      "A",
-    ]
+    keywords = [ "A" ]
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
     ]
-    dynamic = [
-      "B",
-    ]
+    dynamic = [ "B" ]
     dependencies = [
       "requests>=2.0",
     ]
@@ -33,17 +29,13 @@ def test_format_toml() -> None:
 
     expected = """\
     [project]
-    keywords = [
-        "A",
-    ]
+    keywords = [ "A" ]
     classifiers = [
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
     ]
-    dynamic = [
-        "B",
-    ]
+    dynamic = [ "B" ]
     dependencies = [
         "requests>=2.0",
     ]

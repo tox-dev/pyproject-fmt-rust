@@ -197,6 +197,7 @@ mod tests {
     use taplo::formatter::{format_syntax, Options};
     use taplo::parser::parse;
     use taplo::syntax::SyntaxElement;
+    use pretty_assertions::assert_eq;
 
     use crate::helpers::table::Tables;
     use crate::ruff::fix;

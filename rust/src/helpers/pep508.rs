@@ -89,6 +89,7 @@ pub fn get_canonic_requirement_name(value: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
 
     use crate::helpers::pep508::{format_requirement, get_canonic_requirement_name};

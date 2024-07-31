@@ -1,0 +1,9 @@
+[build-system]
+build-backend = "backend"
+requires = ["c>=1.5", "d == 2" ]
+
+[project]
+name = "beta"
+dependencies = [
+    "e>=1.5",
+]

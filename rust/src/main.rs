@@ -63,16 +63,16 @@ pub fn format_toml(content: &str, opt: &Settings) -> String {
     reorder_tables(&root_ast, &mut tables);
 
     let options = Options {
-        align_entries: false,           // do not align by =
-        align_comments: true,           // align inline comments
-        align_single_comments: true,    // align comments after entries
-        array_trailing_comma: true,     // ensure arrays finish with trailing comma
-        array_auto_expand: true,        // arrays go to multi line for easier diffs
-        array_auto_collapse: false,     // do not collapse for easier diffs
-        compact_arrays: false,          // do not compact for easier diffs
-        compact_inline_tables: false,   // do not compact for easier diffs
-        compact_entries: false,         // do not compact for easier diffs
-        column_width: opt.column_width, // always expand arrays per https://github.com/tamasfe/taplo/issues/390
+        align_entries: false,         // do not align by =
+        align_comments: true,         // align inline comments
+        align_single_comments: true,  // align comments after entries
+        array_trailing_comma: true,   // ensure arrays finish with trailing comma
+        array_auto_expand: true,      // arrays go to multi line when too long
+        array_auto_collapse: false,   // do not collapse for easier diffs
+        compact_arrays: false,        // leave whitespace
+        compact_inline_tables: false, // leave whitespace
+        compact_entries: false,       // leave whitespace
+        column_width: opt.column_width,
         indent_tables: false,
         indent_entries: false,
         inline_table_expand: true,
@@ -104,6 +104,7 @@ mod tests {
     use std::path::{Path, PathBuf};
 
     use indoc::indoc;
+    use pretty_assertions::assert_eq;
     use rstest::{fixture, rstest};
 
     use crate::{format_toml, Settings};
@@ -312,6 +313,25 @@ mod tests {
         };
         let got = format_toml(start.as_str(), &settings);
         let expected = read_to_string(data.join("ruff-order.expected.toml")).unwrap();
+        assert_eq!(got, expected);
+        let second = format_toml(got.as_str(), &settings);
+        assert_eq!(second, got);
+    }
+
+    /// Test that the column width is respected,
+    /// and that arrays are neither exploded nor collapsed without reason
+    #[rstest]
+    fn test_column_width(data: PathBuf) {
+        let start = read_to_string(data.join("column-width.start.toml")).unwrap();
+        let settings = Settings {
+            column_width: 80,
+            indent: 4,
+            keep_full_version: false,
+            max_supported_python: (3, 12),
+            min_supported_python: (3, 12),
+        };
+        let got = format_toml(start.as_str(), &settings);
+        let expected = read_to_string(data.join("column-width.expected.toml")).unwrap();
         assert_eq!(got, expected);
         let second = format_toml(got.as_str(), &settings);
         assert_eq!(second, got);

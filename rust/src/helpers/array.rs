@@ -5,8 +5,10 @@ use lexical_sort::{natural_lexical_cmp, StringSort};
 use taplo::syntax::SyntaxKind::{ARRAY, COMMA, NEWLINE, STRING, VALUE, WHITESPACE};
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 
-use crate::helpers::create::{make_comma, make_newline};
+use crate::helpers::create::make_comma;
 use crate::helpers::string::{load_text, update_content};
+
+use super::create::make_newline;
 
 pub fn transform<F>(node: &SyntaxNode, transform: &F)
 where
@@ -37,6 +39,10 @@ where
                 .filter(|x| *x == COMMA || *x == VALUE)
                 .last()
                 == Some(COMMA);
+            let multiline = array_node
+                .children_with_tokens()
+                .find(|e| e.kind() == NEWLINE)
+                .is_some();
             let mut value_set = Vec::<Vec<SyntaxElement>>::new();
             let entry_set = RefCell::new(Vec::<SyntaxElement>::new());
             let mut key_to_pos = HashMap::<String, usize>::new();
@@ -67,7 +73,9 @@ where
                 match &entry.kind() {
                     SyntaxKind::BRACKET_START => {
                         entries.push(entry);
-                        entries.push(make_newline());
+                        if multiline {
+                            entries.push(make_newline());
+                        }
                         previous_is_bracket_open = true;
                     }
                     SyntaxKind::BRACKET_END => {
@@ -80,7 +88,9 @@ where
                     }
                     VALUE => {
                         if has_value {
-                            entry_set.borrow_mut().push(make_newline());
+                            if multiline {
+                                entry_set.borrow_mut().push(make_newline());
+                            }
                             add_to_value_set(entry_value.clone());
                         }
                         has_value = true;
@@ -117,7 +127,7 @@ where
 
             let mut order: Vec<String> = key_to_pos.clone().into_keys().collect();
             order.string_sort_unstable(natural_lexical_cmp);
-            let end = entries.split_off(2);
+            let end = entries.split_off(if multiline { 2 } else { 1 });
             for key in order {
                 entries.extend(value_set[key_to_pos[&key]].clone());
             }
@@ -140,6 +150,7 @@ where
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
     use taplo::formatter::{format_syntax, Options};
     use taplo::parser::parse;
