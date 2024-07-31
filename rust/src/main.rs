@@ -104,7 +104,6 @@ mod tests {
     use std::path::{Path, PathBuf};
 
     use indoc::indoc;
-    use pretty_assertions::assert_eq;
     use rstest::{fixture, rstest};
 
     use crate::{format_toml, Settings};
@@ -321,8 +320,18 @@ mod tests {
     /// Test that the column width is respected,
     /// and that arrays are neither exploded nor collapsed without reason
     #[rstest]
-    fn test_column_width(data: PathBuf) {
-        let start = read_to_string(data.join("column-width.start.toml")).unwrap();
+    fn test_column_width() {
+        let start = indoc! {r#"
+        [build-system]
+        build-backend = "backend"
+        requires = ["c>=1.5", "d == 2" ]
+
+        [project]
+        name = "beta"
+        dependencies = [
+        "e>=1.5",
+        ]
+        "#};
         let settings = Settings {
             column_width: 80,
             indent: 4,
@@ -330,8 +339,22 @@ mod tests {
             max_supported_python: (3, 12),
             min_supported_python: (3, 12),
         };
-        let got = format_toml(start.as_str(), &settings);
-        let expected = read_to_string(data.join("column-width.expected.toml")).unwrap();
+        let got = format_toml(start, &settings);
+        let expected = indoc! {r#"
+        [build-system]
+        build-backend = "backend"
+        requires = [ "c>=1.5", "d==2" ]
+
+        [project]
+        name = "beta"
+        classifiers = [
+            "Programming Language :: Python :: 3 :: Only",
+            "Programming Language :: Python :: 3.12",
+        ]
+        dependencies = [
+            "e>=1.5",
+        ]
+        "#};
         assert_eq!(got, expected);
         let second = format_toml(got.as_str(), &settings);
         assert_eq!(second, got);

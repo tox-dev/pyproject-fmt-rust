@@ -55,7 +55,9 @@ pub fn fix(
         }
         "dependencies" | "optional-dependencies" => {
             transform(entry, &|s| format_requirement(s, keep_full_version));
-            sort(entry, |e| get_canonic_requirement_name(e).to_lowercase() + " " + &format_requirement(e, keep_full_version));
+            sort(entry, |e| {
+                get_canonic_requirement_name(e).to_lowercase() + " " + &format_requirement(e, keep_full_version)
+            });
         }
         "dynamic" | "keywords" => {
             transform(entry, &|s| String::from(s));
@@ -371,7 +373,6 @@ mod tests {
     use taplo::formatter::{format_syntax, Options};
     use taplo::parser::parse;
     use taplo::syntax::SyntaxElement;
-    use pretty_assertions::assert_eq;
 
     use crate::helpers::table::Tables;
     use crate::project::fix;
