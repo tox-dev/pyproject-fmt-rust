@@ -5,10 +5,8 @@ use lexical_sort::{natural_lexical_cmp, StringSort};
 use taplo::syntax::SyntaxKind::{ARRAY, COMMA, NEWLINE, STRING, VALUE, WHITESPACE};
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 
-use crate::helpers::create::make_comma;
+use crate::helpers::create::{make_comma, make_newline};
 use crate::helpers::string::{load_text, update_content};
-
-use super::create::make_newline;
 
 pub fn transform<F>(node: &SyntaxNode, transform: &F)
 where
