@@ -52,7 +52,7 @@ pub fn format_toml(content: &str, opt: &Settings) -> String {
     let root_ast = parse(content).into_syntax().clone_for_update();
     let mut tables = Tables::from_ast(&root_ast);
 
-    build_system::fix(&mut tables, opt.keep_full_version);
+    build_system::fix(&tables, opt.keep_full_version);
     project::fix(
         &mut tables,
         opt.keep_full_version,
@@ -60,7 +60,7 @@ pub fn format_toml(content: &str, opt: &Settings) -> String {
         opt.min_supported_python,
     );
     ruff::fix(&mut tables);
-    reorder_tables(&root_ast, &mut tables);
+    reorder_tables(&root_ast, &tables);
 
     let options = Options {
         align_entries: false,         // do not align by =

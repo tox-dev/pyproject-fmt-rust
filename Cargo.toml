@@ -29,6 +29,9 @@ all = "warn"
 pedantic = "warn"
 nursery = "warn"
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tarpaulin_include)'] }
+
 [dev-dependencies]
 rstest = { version = "0.19.0" } # parametrized tests
 indoc = { version = "2.0.5" }   # dedented test cases for literal strings
