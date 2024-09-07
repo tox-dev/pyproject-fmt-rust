@@ -1,7 +1,7 @@
 [build-system]
 build-backend = "maturin"
 requires = [
-  "maturin>=1.5.1",
+  "maturin>=1.7.1",
 ]
 
 [project]
@@ -27,6 +27,7 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 dynamic = [
   "version",
@@ -35,7 +36,7 @@ dependencies = [
 ]
 optional-dependencies.test = [
   "covdefaults>=2.3",
-  "pytest>=8.2",
+  "pytest>=8.3.2",
   "pytest-cov>=5",
 ]
 urls."Bug Tracker" = "https://github.com/tox-dev/pyproject-fmt-rust/issues"
@@ -99,6 +100,9 @@ lint.preview = true
 [tool.codespell]
 builtin = "clear,usage,en-GB_to_en-US"
 count = true
+
+[tool.pyproject-fmt]
+max_supported_python = "3.13"
 
 [tool.pytest]
 ini_options.testpaths = [

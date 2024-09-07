@@ -17,8 +17,8 @@ To work on the project:
    cargo test
    ```
 
-
 ## License
+
 By contributing to pyproject-rust-format, you agree that your contributions
 will be licensed under the [MIT License](LICENSE).
 
@@ -38,5 +38,6 @@ with a different PATH. To fix it, put the following in `.cargo/config.toml`:
 [env]
 PYO3_PYTHON = "./.venv/bin/python"
 ```
+
 And make sure you have a `.venv` folder with Python in it. This will ensure all
 runs use the same Python and don't reconfigure.
