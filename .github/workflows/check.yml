@@ -33,11 +33,12 @@ jobs:
           python-version: "3.12"
       - name: install tox-uv
         run: python -m pip install tox-uv
-      - uses: actions/checkout@v4
-      - run: rustup toolchain install stable --profile minimal
-      - uses: Swatinem/rust-cache@v2
-      - name: install tarpaulin
-        run: cargo install cargo-tarpaulin
+      - uses: moonrepo/setup-rust@v1
+        with:
+          cache-base: main
+          bins: cargo-tarpaulin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: setup python for test ${{ matrix.py }}
         uses: actions/setup-python@v5
         with:
@@ -66,8 +67,9 @@ jobs:
           python-version: "3.12"
       - name: install tox-uv
         run: python -m pip install tox-uv
-      - run: rustup toolchain install stable --profile minimal
-      - uses: Swatinem/rust-cache@v2
+      - uses: moonrepo/setup-rust@v1
+        with:
+          cache-base: main
       - name: Setup test suite
         run: tox -vv --notest --skip-missing-interpreters false -e ${{ matrix.tox_env }}
       - name: Run test suite
