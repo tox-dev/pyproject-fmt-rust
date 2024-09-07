@@ -17,7 +17,7 @@ pub struct Tables {
 }
 
 impl Tables {
-    pub(crate) fn get(&mut self, key: &str) -> Option<Vec<&RefCell<Vec<SyntaxElement>>>> {
+    pub(crate) fn get(&self, key: &str) -> Option<Vec<&RefCell<Vec<SyntaxElement>>>> {
         if self.header_to_pos.contains_key(key) {
             let mut res = Vec::<&RefCell<Vec<SyntaxElement>>>::new();
             for pos in &self.header_to_pos[key] {
@@ -75,7 +75,7 @@ impl Tables {
         }
     }
 
-    pub fn reorder(&mut self, root_ast: &SyntaxNode, order: &[&str]) {
+    pub fn reorder(&self, root_ast: &SyntaxNode, order: &[&str]) {
         let mut to_insert = Vec::<SyntaxElement>::new();
         let order = calculate_order(&self.header_to_pos, &self.table_set, order);
         let mut next = order.clone();

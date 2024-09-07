@@ -2,7 +2,7 @@ use crate::helpers::array::{sort, transform};
 use crate::helpers::pep508::{format_requirement, get_canonic_requirement_name};
 use crate::helpers::table::{for_entries, reorder_table_keys, Tables};
 
-pub fn fix(tables: &mut Tables, keep_full_version: bool) {
+pub fn fix(tables: &Tables, keep_full_version: bool) {
     let table_element = tables.get("build-system");
     if table_element.is_none() {
         return;
@@ -35,8 +35,8 @@ mod tests {
     fn evaluate(start: &str, keep_full_version: bool) -> String {
         let root_ast = parse(start).into_syntax().clone_for_update();
         let count = root_ast.children_with_tokens().count();
-        let mut tables = Tables::from_ast(&root_ast);
-        fix(&mut tables, keep_full_version);
+        let tables = Tables::from_ast(&root_ast);
+        fix(&tables, keep_full_version);
         let entries = tables
             .table_set
             .iter()
