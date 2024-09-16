@@ -27,50 +27,58 @@ jobs:
           - windows-latest
           - macos-latest
     steps:
-      - name: setup python for tox
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
         with:
-          python-version: "3.12"
-      - name: install tox-uv
-        run: python -m pip install tox-uv
+          fetch-depth: 0
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install tox
+        run: uv tool install --python-preference only-managed --python 3.13 tox --with tox-uv
+      - name: Install Python
+        if: startsWith(matrix.env, '3.') && matrix.env != '3.13'
+        run: uv python install --python-preference only-managed ${{ matrix.env }}
       - uses: moonrepo/setup-rust@v1
         with:
           cache-base: main
           bins: cargo-tarpaulin
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: setup python for test ${{ matrix.py }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.py }}
-          allow-prereleases: true
       - name: setup test suite
         run: tox run -vv --notest --skip-missing-interpreters false -e ${{ matrix.py }}
       - name: run test suite
         run: tox run  --skip-pkg-install -e ${{ matrix.py }}
+        env:
+          PYTEST_ADDOPTS: "-vv --durations=20"
 
   check:
-    name: tox env ${{ matrix.tox_env }}
+    name: tox env ${{ matrix.env }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        tox_env:
+        env:
           - type
           - dev
-          - readme
+          - pkg_meta
     steps:
       - uses: actions/checkout@v4
-      - name: setup Python 3.12
-        uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-      - name: install tox-uv
-        run: python -m pip install tox-uv
-      - uses: moonrepo/setup-rust@v1
+          fetch-depth: 0
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v3
         with:
-          cache-base: main
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install tox
+        run: uv tool install --python-preference only-managed --python 3.13 tox --with tox-uv
       - name: Setup test suite
-        run: tox -vv --notest --skip-missing-interpreters false -e ${{ matrix.tox_env }}
+        run: tox run -vv --notest --skip-missing-interpreters false -e ${{ matrix.env }}
       - name: Run test suite
-        run: tox --skip-pkg-install -e ${{ matrix.tox_env }}
+        run: tox run --skip-pkg-install -e ${{ matrix.env }}
+        env:
+          PYTEST_ADDOPTS: "-vv --durations=20"
