@@ -328,7 +328,7 @@ mod tests {
         let root_ast = parse("[A]\nb = 1\na = 1\n\n[B]\nb = 2")
             .into_syntax()
             .clone_for_update();
-        let mut tables = Tables::from_ast(&root_ast);
+        let tables = Tables::from_ast(&root_ast);
         {
             let table = &mut tables.get("A").unwrap().first().unwrap().borrow_mut();
             reorder_table_keys(table, &["", "a", "b"]);
