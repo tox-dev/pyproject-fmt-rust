@@ -37,9 +37,7 @@ where
                 .filter(|x| *x == COMMA || *x == VALUE)
                 .last()
                 == Some(COMMA);
-            let multiline = array_node
-                .children_with_tokens()
-                .any(|e| e.kind() == NEWLINE);
+            let multiline = array_node.children_with_tokens().any(|e| e.kind() == NEWLINE);
             let mut value_set = Vec::<Vec<SyntaxElement>>::new();
             let entry_set = RefCell::new(Vec::<SyntaxElement>::new());
             let mut key_to_pos = HashMap::<String, usize>::new();
