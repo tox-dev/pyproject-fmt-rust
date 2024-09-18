@@ -321,19 +321,46 @@ pub fn collapse_sub_tables(tables: &mut Tables, name: &str) {
 mod tests {
     use super::*;
 
+    use indoc::indoc;
     use taplo::parser::parse;
 
     #[test]
     fn test_reorder() {
-        let root_ast = parse("[A]\nb = 1\na = 1\n\n[B]\nb = 2")
-            .into_syntax()
-            .clone_for_update();
+        let root_ast = parse(indoc! {r#"
+            [A]
+            b = 1
+            a = 1
+
+            [B]
+            b = 2
+            [C]
+            b = 3
+            # Notes on A
+            a = 3"#})
+        .into_syntax()
+        .clone_for_update();
         let tables = Tables::from_ast(&root_ast);
         {
             let table = &mut tables.get("A").unwrap().first().unwrap().borrow_mut();
             reorder_table_keys(table, &["", "a", "b"]);
         }
-        tables.reorder(&root_ast, &["B", "A"]);
-        assert_eq!(root_ast.to_string(), "[B]\nb = 2\n\n[A]\na = 1\n\nb = 1\n\n");
+        tables.reorder(&root_ast, &["C", "B", "A"]);
+        assert_eq!(
+            root_ast.to_string(),
+            indoc! {r#"
+            [C]
+            # Notes on A
+            a = 3
+            b = 3
+
+            [B]
+            b = 2
+
+            [A]
+            a = 1
+            b = 1
+
+            "#}
+        );
     }
 }
