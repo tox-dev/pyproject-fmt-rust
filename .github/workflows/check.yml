@@ -35,12 +35,8 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: "pyproject.toml"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install tox
         run: uv tool install --python-preference only-managed --python 3.13 tox --with tox-uv
-      - name: Install Python
-        if: startsWith(matrix.env, '3.') && matrix.env != '3.13'
-        run: uv python install --python-preference only-managed ${{ matrix.env }}
       - uses: moonrepo/setup-rust@v1
         with:
           cache-base: main
