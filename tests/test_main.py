@@ -66,6 +66,53 @@ from pyproject_fmt_rust import Settings, format_toml
             """,
             id="collapsed",
         ),
+        pytest.param(
+            """
+            [build-system]
+            requires = [
+                "hatchling",
+            ]
+            build-backend = "hatchling.build"
+
+            [project]
+            keywords = [
+              "A",
+            ]
+            classifiers = [
+              "Programming Language :: Python :: 3 :: Only",
+            ]
+            dynamic = [
+              "B",
+            ]
+            dependencies = [
+              "requests>=2.0",
+            ]
+            """,
+            """\
+            [build-system]
+            build-backend = "hatchling.build"
+            requires = [
+                "hatchling",
+            ]
+
+            [project]
+            keywords = [
+                "A",
+            ]
+            classifiers = [
+                "Programming Language :: Python :: 3 :: Only",
+                "Programming Language :: Python :: 3.7",
+                "Programming Language :: Python :: 3.8",
+            ]
+            dynamic = [
+                "B",
+            ]
+            dependencies = [
+                "requests>=2.0",
+            ]
+            """,
+            id="multi",
+        ),
     ],
 )
 def test_format_toml(start: str, expected: str) -> None:
