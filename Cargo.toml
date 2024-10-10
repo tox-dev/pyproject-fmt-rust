@@ -14,9 +14,9 @@ crate-type = ["cdylib"]
 
 [dependencies]
 taplo = { version = "0.13.0" }                          # formatter
-pyo3 = { version = "0.21.2", features = ["abi3-py38"] } # integration with Python
-pep440_rs = { version = "0.6.0" }
-pep508_rs = { version = "0.6.0" }
+pyo3 = { version = "0.22.3", features = ["abi3-py38"] } # integration with Python
+pep440_rs = { version = "0.7.0" }
+pep508_rs = { version = "0.6.1" }
 lexical-sort = { version = "0.3.1" }
 regex = { version = "1.10.4" }
 
@@ -33,5 +33,5 @@ nursery = "warn"
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tarpaulin_include)'] }
 
 [dev-dependencies]
-rstest = { version = "0.19.0" } # parametrized tests
+rstest = { version = "0.23.0" } # parametrized tests
 indoc = { version = "2.0.5" }   # dedented test cases for literal strings
