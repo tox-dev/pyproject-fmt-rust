@@ -381,7 +381,7 @@ mod tests {
         let root_ast = parse(start).into_syntax().clone_for_update();
         let count = root_ast.children_with_tokens().count();
         let mut tables = Tables::from_ast(&root_ast);
-        fix(&mut tables, keep_full_version, max_supported_python, (3, 8));
+        fix(&mut tables, keep_full_version, max_supported_python, (3, 9));
         let entries = tables
             .table_set
             .iter()
@@ -400,7 +400,7 @@ mod tests {
         indoc ! {r""},
         "\n",
         false,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_requires_no_keep(
         indoc ! {r#"
@@ -411,7 +411,7 @@ mod tests {
     [project]
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
     ]
     dependencies = [
       "a>=1",
@@ -419,7 +419,7 @@ mod tests {
     ]
     "#},
         false,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_requires_keep(
         indoc ! {r#"
@@ -430,7 +430,7 @@ mod tests {
     [project]
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
     ]
     dependencies = [
       "a>=1.0.0",
@@ -438,12 +438,12 @@ mod tests {
     ]
     "#},
         true,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_requires_ge(
         indoc ! {r#"
     [project]
-    requires-python = " >= 3.8"
+    requires-python = " >= 3.9"
     classifiers = [
       # comment license inline 1
       # comment license inline 2
@@ -460,13 +460,12 @@ mod tests {
     "#},
         indoc ! {r#"
     [project]
-    requires-python = ">=3.8"
+    requires-python = ">=3.9"
     classifiers = [
       # comment license inline 1
       # comment license inline 2
       "License :: OSI Approved :: MIT License",      # comment license post
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
       "Programming Language :: Python :: 3.9",
       # comment 3.10 inline
       "Programming Language :: Python :: 3.10", # comment 3.10 post
@@ -481,18 +480,18 @@ mod tests {
     #[case::project_requires_gt(
         indoc ! {r#"
     [project]
-    requires-python = " > 3.7"
+    requires-python = " > 3.8"
     "#},
         indoc ! {r#"
     [project]
-    requires-python = ">3.7"
+    requires-python = ">3.8"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
     ]
     "#},
         true,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_requires_eq(
         indoc ! {r#"
@@ -508,7 +507,7 @@ mod tests {
     ]
     "#},
         true,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_sort_keywords(
         indoc ! {r#"
@@ -525,11 +524,11 @@ mod tests {
     ]
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
     ]
     "#},
         true,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_sort_dynamic(
         indoc ! {r#"
@@ -540,7 +539,7 @@ mod tests {
     [project]
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
     ]
     dynamic = [
       " c",
@@ -552,7 +551,7 @@ mod tests {
     ]
     "#},
         true,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_name_norm(
         indoc ! {r#"
@@ -564,11 +563,11 @@ mod tests {
     name = "a-b-c"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
     ]
     "#},
         true,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_name_literal(
         indoc ! {r"
@@ -580,28 +579,28 @@ mod tests {
     name = "a-b-c"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
     ]
     "#},
         true,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_requires_gt_old(
         indoc ! {r#"
     [project]
-    requires-python = " > 3.6"
+    requires-python = " > 3.7"
     "#},
         indoc ! {r#"
     [project]
-    requires-python = ">3.6"
+    requires-python = ">3.7"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.7",
       "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
     ]
     "#},
         true,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_requires_range(
         indoc ! {r#"
@@ -622,7 +621,7 @@ mod tests {
     ]
     "#},
         true,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_requires_high_range(
         indoc ! {r#"
@@ -640,7 +639,7 @@ mod tests {
     ]
     "#},
         true,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_requires_range_neq(
         indoc ! {r#"
@@ -657,7 +656,7 @@ mod tests {
     ]
     "#},
         true,
-        (3, 12),
+        (3, 13),
     )]
     #[case::project_description_whitespace(
         "[project]\ndescription = ' A  magic stuff \t is great\t\t.\r\n  Like  really  .\t\'\nrequires-python = '==3.12'",
@@ -671,7 +670,7 @@ mod tests {
     ]
     "#},
         true,
-        (3, 12),
+        (3, 13),
     )]
     #[case::project_description_multiline(
         indoc ! {r#"
@@ -692,7 +691,7 @@ mod tests {
     ]
     "#},
         true,
-        (3, 12),
+        (3, 13),
     )]
     #[case::project_dependencies_with_double_quotes(
         indoc ! {r#"
@@ -716,7 +715,7 @@ mod tests {
     ]
     "#},
         true,
-        (3, 12),
+        (3, 13),
     )]
     #[case::project_platform_dependencies(
         indoc ! {r#"
@@ -742,7 +741,7 @@ mod tests {
     ]
     "#},
         true,
-        (3, 12),
+        (3, 13),
     )]
     #[case::project_opt_inline_dependencies(
         indoc ! {r#"
@@ -772,7 +771,7 @@ mod tests {
     ]
     "#},
         true,
-        (3, 12),
+        (3, 13),
     )]
     #[case::project_opt_dependencies(
         indoc ! {r#"
@@ -784,7 +783,7 @@ mod tests {
     [project]
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
     ]
     optional-dependencies.docs = [
       "sphinx>=7.3.7",
@@ -796,7 +795,7 @@ mod tests {
     ]
     "#},
         true,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_scripts_collapse(
         indoc ! {r#"
@@ -808,13 +807,13 @@ mod tests {
     [project]
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
     ]
     scripts.a = "b"
     scripts.c = "d"
     "#},
         true,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_entry_points_collapse(
         indoc ! {r#"
@@ -838,7 +837,7 @@ mod tests {
     [project]
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
     ]
     scripts.virtualenv = "virtualenv.__main__:run_with_catch"
     gui-scripts.hello-world = "timmins:hello_world"
@@ -851,7 +850,7 @@ mod tests {
     entry-points."virtualenv.activate".bash = "virtualenv.activation.bash:BashActivator"
     "#},
         true,
-        (3, 8),
+        (3, 9),
     )]
     #[case::project_preserve_implementation_classifiers(
         indoc ! {r#"
