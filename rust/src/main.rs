@@ -137,11 +137,11 @@ mod tests {
     name = "alpha"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
       "Programming Language :: Python :: 3.9",
       "Programming Language :: Python :: 3.10",
       "Programming Language :: Python :: 3.11",
       "Programming Language :: Python :: 3.12",
+      "Programming Language :: Python :: 3.13",
     ]
     dependencies = [
       "e>=1.5",
@@ -152,14 +152,14 @@ mod tests {
     "#},
         2,
         false,
-        (3, 12),
+        (3, 13),
     )]
     #[case::empty(
         indoc ! {r""},
         "\n",
         2,
         true,
-        (3, 12)
+        (3, 13)
     )]
     #[case::scripts(
         indoc ! {r#"
@@ -171,14 +171,14 @@ mod tests {
     [project]
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
     ]
     scripts.a = "b"
     scripts.c = "d"
     "#},
         2,
         true,
-        (3, 8)
+        (3, 9)
     )]
     #[case::subsubtable(
         indoc ! {r"
@@ -196,7 +196,7 @@ mod tests {
     [project]
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
     ]
 
     [tool.coverage]
@@ -210,7 +210,7 @@ mod tests {
     "#},
         2,
         true,
-        (3, 8)
+        (3, 9)
     )]
     #[case::array_of_tables(
         indoc ! {r#"
@@ -240,7 +240,7 @@ mod tests {
     "#},
         2,
         true,
-        (3, 8)
+        (3, 9)
     )]
     #[case::unstable_issue_18(
         indoc ! {r#"
@@ -270,7 +270,7 @@ mod tests {
     "#},
         2,
         true,
-        (3, 8)
+        (3, 9)
     )]
     fn test_format_toml(
         #[case] start: &str,
@@ -284,7 +284,7 @@ mod tests {
             indent,
             keep_full_version,
             max_supported_python,
-            min_supported_python: (3, 8),
+            min_supported_python: (3, 9),
         };
         let got = format_toml(start, &settings);
         assert_eq!(got, expected);
@@ -307,8 +307,8 @@ mod tests {
             column_width: 1,
             indent: 2,
             keep_full_version: false,
-            max_supported_python: (3, 8),
-            min_supported_python: (3, 8),
+            max_supported_python: (3, 9),
+            min_supported_python: (3, 9),
         };
         let got = format_toml(start.as_str(), &settings);
         let expected = read_to_string(data.join("ruff-order.expected.toml")).unwrap();
@@ -336,8 +336,8 @@ mod tests {
             column_width: 80,
             indent: 4,
             keep_full_version: false,
-            max_supported_python: (3, 12),
-            min_supported_python: (3, 12),
+            max_supported_python: (3, 13),
+            min_supported_python: (3, 13),
         };
         let got = format_toml(start, &settings);
         let expected = indoc! {r#"
@@ -349,7 +349,7 @@ mod tests {
         name = "beta"
         classifiers = [
             "Programming Language :: Python :: 3 :: Only",
-            "Programming Language :: Python :: 3.12",
+            "Programming Language :: Python :: 3.13",
         ]
         dependencies = [
             "e>=1.5",
