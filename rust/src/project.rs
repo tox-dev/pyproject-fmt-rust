@@ -41,8 +41,7 @@ pub fn fix(
                     &s.trim()
                         .lines()
                         .map(|part| {
-                            part.trim()
-                                .split_whitespace()
+                            part.split_whitespace()
                                 .filter(|part| !part.trim().is_empty())
                                 .collect::<Vec<&str>>()
                                 .join(" ")
