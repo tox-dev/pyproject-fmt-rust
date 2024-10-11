@@ -42,7 +42,7 @@ pub fn fix(
                         .lines()
                         .map(|part| {
                             part.trim()
-                                .split(char::is_whitespace)
+                                .split_whitespace()
                                 .filter(|part| !part.trim().is_empty())
                                 .collect::<Vec<&str>>()
                                 .join(" ")
