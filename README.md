@@ -1,5 +1,7 @@
 # pyproject-fmt-rust
 
+Migrated into the [toml-fmt](https://github.com/gaborbernat/toml-fmt) repository.
+
 [![PyPI](https://img.shields.io/pypi/v/pyproject-fmt-rust?style=flat-square)](https://pypi.org/project/pyproject-fmt-rust)
 [![PyPI - Implementation](https://img.shields.io/pypi/implementation/pyproject-fmt-rust?style=flat-square)](https://pypi.org/project/pyproject-fmt-rust)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyproject-fmt-rust?style=flat-square)](https://pypi.org/project/pyproject-fmt-rust)
